@@ -1,19 +1,20 @@
+#include "HashMap.h"
 #include "gtest/gtest.h"
-#include <toolbox/HashMap.h>
-#include <map>
-#include <string>
+#include <algorithm>
+
+unsigned char CharHash::operator()(const std::string& input) const
+{
+    return std::accumulate(input.begin(), input.end(), 0, std::plus<char>());
+}
 
 TEST(HashMap, Operations)
 {
-    using hash_t = std::hash<std::string>;
-    using map_t = std::map<hash_t::result_type, std::string>;
-    using hash_map_t = toolbox::HashMap<hash_t, map_t>;
 
     auto hash_map = hash_map_t{};
     auto inserted = hash_map.insert("elephant");
     auto key = inserted.first->first;
     EXPECT_EQ(true, inserted.second);
-    EXPECT_EQ(10238581130556107085u, inserted.first->first);
+    EXPECT_EQ('Q', inserted.first->first);
     EXPECT_EQ(inserted.first, hash_map.find(key));
 
     using pair_vector_t = std::vector<std::pair<int, std::string>>;

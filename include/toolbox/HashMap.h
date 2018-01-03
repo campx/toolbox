@@ -1,10 +1,20 @@
 #pragma once
+
+#include <map>
+#include <toolbox/HashKeyValue.h>
 #include <utility>
 
-namespace aux
+namespace toolbox
 {
 
-template <typename Hash, typename Map>
+/** Adapt a std::map-like class by assigning keys to values using a given
+ * Hash function
+ *
+ * All iterators are const in order to preserve the invariant key = hash(value)
+ */
+template <typename T,
+          typename Hash = std::hash<T>,
+          typename Map = std::map<typename Hash::result_type, T>>
 class HashMap
 {
 public:
@@ -15,10 +25,9 @@ public:
                                typename Map::mapped_type>::value,
                   "Hash::argument_type != Map::mapped_type");
 
-    using key_type = typename Hash::result_type;
-    using mapped_type = typename Hash::argument_type;
-    using value_type = std::pair<const key_type, mapped_type>;
-
+    using key_type = typename Map::key_type;
+    using mapped_type = typename Map::mapped_type;
+    using value_type = typename Map::value_type;
     using size_type = typename Map::size_type;
     using difference_type = typename Map::difference_type;
     using hasher = Hash;
@@ -27,94 +36,139 @@ public:
     using const_reference = const value_type&;
     using pointer = typename Map::pointer;
     using const_pointer = typename Map::const_pointer;
-    using iterator = typename Map::iterator;
+    using iterator = typename Map::const_iterator;
     using const_iterator = typename Map::const_iterator;
 
-    explicit HashMap(Hash hash = Hash(), Map store = Map());
+    explicit HashMap(Hash hash = Hash(), Map map = Map());
+
     HashMap(const HashMap&) = default;
-    HashMap(HashMap&&) = default;
+
+    HashMap(HashMap&&) noexcept = default;
+
     HashMap& operator=(const HashMap&) = default;
-    HashMap& operator=(HashMap&&) = default;
+
+    HashMap& operator=(HashMap&&) noexcept = default;
 
     iterator begin();
+
     const_iterator cbegin() const;
+
     iterator end();
+
     const_iterator cend() const;
 
     /** Determine whether the container is empty */
     bool empty() const;
+
     /** Get the number of values stored by the container */
     size_type size() const;
+
     /** Remove all values from the container */
     void clear();
 
-    /** Insert a value.
-     *
-     * A value_type is inserted to store using the key generate by hasher */
+    /** Insert an element */
     std::pair<iterator, bool> insert(const mapped_type& value);
 
-    /** Remove the element identified by the given key */
+    /** Remove an element */
     size_type erase(const key_type& key);
+    size_type erase(const mapped_type& value);
 
-    /** Find the element identified by the given key */
-    iterator find(const key_type& key);
+    /** Find an element */
+    const_iterator find(const key_type& key) const;
+    const_iterator find(const mapped_type& value) const;
 
 private:
     Hash hash_;
     Map map_;
 };
 
-template <typename Hash, typename Map>
-HashMap<Hash, Map>::HashMap(Hash hash, Map store)
-    : hash_(std::move(hash)), map_(std::move(store))
+template <typename T, typename Hash, typename Map>
+HashMap<T, Hash, Map>::HashMap(Hash hash, Map map)
+    : hash_(std::move(hash)), map_(std::move(map))
 {
 }
 
-template <typename Hash, typename Map>
-typename HashMap<Hash, Map>::iterator HashMap<Hash, Map>::begin()
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::iterator HashMap<T, Hash, Map>::begin()
 {
     return map_.begin();
 }
 
-template <typename Hash, typename Map>
-typename HashMap<Hash, Map>::iterator HashMap<Hash, Map>::end()
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::iterator HashMap<T, Hash, Map>::end()
 {
     return map_.end();
 }
 
-template <typename Hash, typename Map>
-typename HashMap<Hash, Map>::const_iterator HashMap<Hash, Map>::cbegin() const
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::const_iterator
+HashMap<T, Hash, Map>::cbegin() const
 {
     return map_.cbegin();
 }
 
-template <typename Hash, typename Map>
-typename HashMap<Hash, Map>::const_iterator HashMap<Hash, Map>::cend() const
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::const_iterator
+HashMap<T, Hash, Map>::cend() const
 {
     return map_.cend();
 }
 
-template <typename Hash, typename Map>
-std::pair<typename HashMap<Hash, Map>::iterator, bool>
-HashMap<Hash, Map>::insert(
-    const typename HashMap<Hash, Map>::mapped_type& value)
+template <typename T, typename Hash, typename Map>
+bool HashMap<T, Hash, Map>::empty() const
+{
+    return map_.empty();
+}
+
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::size_type HashMap<T, Hash, Map>::size() const
+{
+    return map_.size();
+}
+
+template <typename T, typename Hash, typename Map>
+void HashMap<T, Hash, Map>::clear()
+{
+    map_.clear();
+}
+
+template <typename T, typename Hash, typename Map>
+std::pair<typename HashMap<T, Hash, Map>::iterator, bool>
+HashMap<T, Hash, Map>::insert(
+    const typename HashMap<T, Hash, Map>::mapped_type& value)
 {
     auto key = hash_(value);
     return map_.insert(std::make_pair(key, value));
 }
 
-template <typename Hash, typename Map>
-typename HashMap<Hash, Map>::size_type
-HashMap<Hash, Map>::erase(const typename HashMap<Hash, Map>::key_type& key)
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::size_type HashMap<T, Hash, Map>::erase(
+    const typename HashMap<T, Hash, Map>::key_type& key)
 {
     return map_.erase(key);
 }
 
-template <typename Hash, typename Map>
-typename HashMap<Hash, Map>::iterator
-HashMap<Hash, Map>::find(const typename HashMap<Hash, Map>::key_type& key)
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::size_type HashMap<T, Hash, Map>::erase(
+    const typename HashMap<T, Hash, Map>::mapped_type& value)
+{
+    auto key = hash_(value);
+    return map_.erase(key);
+}
+
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::const_iterator HashMap<T, Hash, Map>::find(
+    const typename HashMap<T, Hash, Map>::key_type& key) const
 {
     return map_.find(key);
 }
 
-} // namespace aux
+template <typename T, typename Hash, typename Map>
+typename HashMap<T, Hash, Map>::const_iterator HashMap<T, Hash, Map>::find(
+    const typename HashMap<T, Hash, Map>::mapped_type& value) const
+{
+    auto key = hash_(value);
+    return map_.find(key);
+}
+
+} // namespace toolbox

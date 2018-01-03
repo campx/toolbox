@@ -1,3 +1,3 @@
-# Aux
+# Toolbox
 
-Aux is a library of auxillary classes and functions
+Toolbox is a library of auxillary classes and functions

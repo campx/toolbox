@@ -26,7 +26,15 @@ TEST(Toolbox, ContainerTransformer)
             std::set<int>{}, io);
         set.insert("1");
         EXPECT_NE(set.end(), set.find("1"));
-        EXPECT_NE(set.container().end(), set.container().find(1));
+        EXPECT_NE(set.container().cend(), set.container().find(1));
+
+        /** Check that ContainerTransformer also works when the container is a
+         * smart pointer type */
+        using set_ptr = std::shared_ptr<std::set<int>>;
+        auto set_p = toolbox::ContainerTransformer<set_ptr, decltype(io)>(
+            std::make_shared<std::set<int>>(set.container()), io);
+        EXPECT_NE(set_p.end(), set_p.find("1"));
+        EXPECT_NE(set_p.container().cend(), set_p.container().find(1));
     }
     {
         struct InputFunction

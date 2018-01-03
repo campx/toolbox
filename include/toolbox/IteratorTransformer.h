@@ -1,74 +1,81 @@
 #pragma once
 #include <memory>
 
-namespace aux
+namespace toolbox
 {
 
-template <typename Iterator, typename Function>
-class IteratorAdapter : public std::iterator<std::input_iterator_tag,
-                                             typename Function::result_type>
+template <typename Iterator, typename Transform>
+class IteratorTransformer
+    : public std::iterator<std::input_iterator_tag,
+                           decltype(
+                               Transform()(typename Iterator::value_type()))>
 {
 public:
-    using self_type = IteratorAdapter;
+    using self_type = IteratorTransformer;
 
-    explicit IteratorAdapter(Iterator it, Function function = Function{});
-    IteratorAdapter(const IteratorAdapter& value) = default;
-    ~IteratorAdapter() = default;
-    IteratorAdapter(IteratorAdapter&&) = default;
-    IteratorAdapter& operator=(const IteratorAdapter&) = default;
-    IteratorAdapter& operator=(IteratorAdapter&&) = default;
+    explicit IteratorTransformer(Iterator it,
+                                 Transform transform = Transform{});
+    IteratorTransformer(const IteratorTransformer& value) = default;
+    ~IteratorTransformer() = default;
+    IteratorTransformer(IteratorTransformer&&) = default;
+    IteratorTransformer& operator=(const IteratorTransformer&) = default;
+    IteratorTransformer& operator=(IteratorTransformer&&) = default;
 
     Iterator iterator() const;
 
+    using value_type = decltype(Transform()(typename Iterator::value_type()));
+    using reference_type = value_type&;
+    using pointer_type = value_type*;
+
     self_type operator++();
     self_type operator++(int dummy);
-    typename Function::result_type& operator*();
-    typename Function::result_type* operator->();
+    reference_type operator*();
+    pointer_type operator->();
 
-    bool operator==(const IteratorAdapter& rhs) const;
-    bool operator!=(const IteratorAdapter& rhs) const;
+    bool operator==(const IteratorTransformer& rhs) const;
+    bool operator!=(const IteratorTransformer& rhs) const;
 
 private:
     Iterator it_;
-    Function function_;
-    typename Function::result_type value_;
+    Transform transform_;
+    value_type value_;
     bool dirty_flag_;
 
     void evaluate();
     void increment();
 };
 
-template <typename Iterator, typename Function>
-IteratorAdapter<Iterator, Function>::IteratorAdapter(Iterator it,
-                                                     Function function)
-    : it_(std::move(it)), function_(function), dirty_flag_(true)
+template <typename Iterator, typename Transform>
+IteratorTransformer<Iterator, Transform>::IteratorTransformer(
+    Iterator it, Transform transform)
+    : it_(std::move(it)), transform_(transform), dirty_flag_(true)
 {
 }
 
-template <typename Iterator, typename Function>
-Iterator IteratorAdapter<Iterator, Function>::iterator() const
+template <typename Iterator, typename Transform>
+Iterator IteratorTransformer<Iterator, Transform>::iterator() const
 {
     return it_;
 }
 
-template <typename Iterator, typename Function>
-void IteratorAdapter<Iterator, Function>::increment()
+template <typename Iterator, typename Transform>
+void IteratorTransformer<Iterator, Transform>::increment()
 {
     ++it_;
     dirty_flag_ = true;
 }
 
-template <typename Iterator, typename Function>
-typename IteratorAdapter<Iterator, Function>::self_type
-    IteratorAdapter<Iterator, Function>::operator++()
+template <typename Iterator, typename Transform>
+typename IteratorTransformer<Iterator, Transform>::self_type
+    IteratorTransformer<Iterator, Transform>::operator++()
 {
     increment();
     return *this;
 }
 
-template <typename Iterator, typename Function>
-typename IteratorAdapter<Iterator, Function>::self_type
-    IteratorAdapter<Iterator, Function>::operator++(int dummy)
+template <typename Iterator, typename Transform>
+typename IteratorTransformer<Iterator, Transform>::self_type
+    IteratorTransformer<Iterator, Transform>::operator++(int dummy)
 {
     dummy++;
     auto tmp = *this;
@@ -76,44 +83,44 @@ typename IteratorAdapter<Iterator, Function>::self_type
     return tmp;
 }
 
-template <typename Iterator, typename Function>
-void IteratorAdapter<Iterator, Function>::evaluate()
+template <typename Iterator, typename Transform>
+void IteratorTransformer<Iterator, Transform>::evaluate()
 {
     if (dirty_flag_)
     {
-        value_ = function_(*it_);
+        value_ = transform_(*it_);
         dirty_flag_ = false;
     }
 }
 
-template <typename Iterator, typename Function>
-typename Function::result_type& IteratorAdapter<Iterator, Function>::
-operator*()
+template <typename Iterator, typename Transform>
+typename IteratorTransformer<Iterator, Transform>::reference_type
+    IteratorTransformer<Iterator, Transform>::operator*()
 {
     evaluate();
     return value_;
 }
 
-template <typename Iterator, typename Function>
-typename Function::result_type* IteratorAdapter<Iterator, Function>::
-operator->()
+template <typename Iterator, typename Transform>
+typename IteratorTransformer<Iterator, Transform>::pointer_type
+    IteratorTransformer<Iterator, Transform>::operator->()
 {
     evaluate();
     return &value_;
 }
 
-template <typename Iterator, typename Function>
-bool IteratorAdapter<Iterator, Function>::
-operator==(const IteratorAdapter<Iterator, Function>& rhs) const
+template <typename Iterator, typename Transform>
+bool IteratorTransformer<Iterator, Transform>::
+operator==(const IteratorTransformer<Iterator, Transform>& rhs) const
 {
     return it_ == rhs.it_;
 }
 
-template <typename Iterator, typename Function>
-bool IteratorAdapter<Iterator, Function>::
-operator!=(const IteratorAdapter<Iterator, Function>& rhs) const
+template <typename Iterator, typename Transform>
+bool IteratorTransformer<Iterator, Transform>::
+operator!=(const IteratorTransformer<Iterator, Transform>& rhs) const
 {
     return it_ != rhs.it_;
 }
 
-} // namespace aux
+} // namespace toolbox

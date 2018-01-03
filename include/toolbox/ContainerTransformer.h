@@ -1,191 +1,183 @@
 #pragma once
-#include <aux/IteratorAdapter.h>
+#include <map>
 #include <memory>
+#include <toolbox/Dereference.h>
+#include <toolbox/IteratorTransformer.h>
 #include <type_traits>
+#include <vector>
 
-namespace aux
+namespace toolbox
 {
 
-/** The identity bijunction; simply returns its input */
-template <typename T>
-struct Identity
-{
-    using first_type = std::function<T(T)>;
-    using second_type = std::function<T(T)>;
-    first_type first;
-    second_type second;
-    static T f(const T& input);
-    Identity();
-};
-
-/** KeyBijection and ValueBijection are each a std::pair of symmetric functions
+/** Applies an Transform (a bijective function pair) to an AssociativeContainer
  *
- * Choosing to pair functions by type rather than input/output results in no
- * loss of generality, since the bijections can be appropriated elsewhere, for
- * example in encoding/decoding each type for network messaging, or for
- * implementing FunctionalSet etc
+ * e.g. Transform takes a std::pair<Link, Node> and calls link.id(hash(node))
+ * on
+ * input, passes through on output
+ *
+ * Need to be able to construct Link from ID
+ * Set is ~ a map with comparison on first only
+ *
+ * Transform is a bijective pair of functors
+ * Transform::first_type converts from the externally facing data type to the
+ * internal data type
+ * Transform::second_type converts from the internal data type to the external
+ * data type
  */
-template <typename Map, typename KeyBijection, typename ValueBijection>
-class MapAdapter
+template <typename Container, typename Transform>
+class ContainerTransformer
 {
+private:
+    Container container_;
+    Transform transform_;
+
 public:
-    // Ensure the functions are reciprocal
-    using KeyInputFunction = typename KeyBijection::first_type;
-    using KeyOutputFunction = typename KeyBijection::second_type;
-    using ValueInputFunction = typename ValueBijection::first_type;
-    using ValueOutputFunction = typename ValueBijection::second_type;
+    using container_type = typename std::remove_reference<decltype(
+        dereference<Container>(container_))>::type;
+    using value_type =
+        decltype(transform_.second(typename container_type::value_type()));
+    using size_type = typename container_type::size_type;
+    using difference_type = typename container_type::difference_type;
+    using allocator_type = typename container_type::allocator_type;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    using pointer = typename container_type::pointer;
+    using const_pointer = typename container_type::const_pointer;
+    using iterator = IteratorTransformer<typename container_type::iterator,
+                                         typename Transform::second_type>;
+    using const_iterator =
+        IteratorTransformer<typename container_type::const_iterator,
+                            typename Transform::second_type>;
 
-    using storage_value_type = typename Map::value_type;
-    using key_type = typename KeyBijection::second_type::result_type;
-    using mapped_type = typename ValueBijection::second_type::result_type;
-    using value_type = std::pair<key_type, mapped_type>;
+    explicit ContainerTransformer(Container container = Container(),
+                                  Transform transform = Transform());
 
-    struct InputFunction
-    {
-        using argument_type = value_type;
-        using result_type = storage_value_type;
-        InputFunction(KeyInputFunction kf, ValueInputFunction vf);
-        result_type operator()(const argument_type& input) const;
-
-        KeyInputFunction first;
-        ValueInputFunction second;
-    };
-
-    struct OutputFunction
-    {
-        using argument_type = storage_value_type;
-        using result_type = value_type;
-        OutputFunction(KeyOutputFunction kf, ValueOutputFunction vf);
-        result_type operator()(const argument_type& input) const;
-
-        KeyOutputFunction first;
-        ValueOutputFunction second;
-    };
-
-    using iterator = ForwardIterator<typename Map::iterator, OutputFunction>;
-    using const_iterator = iterator;
-    using size_type = typename Map::size_type;
-
-    explicit MapAdapter(std::shared_ptr<Map> storage,
-                        KeyBijection key_function = KeyBijection(),
-                        ValueBijection value_function = ValueBijection());
+    ContainerTransformer(const ContainerTransformer&) = default;
+    ContainerTransformer(ContainerTransformer&&) = default;
+    ContainerTransformer& operator=(const ContainerTransformer&) = default;
+    ContainerTransformer& operator=(ContainerTransformer&&) = default;
 
     iterator begin();
+    const_iterator cbegin() const;
     iterator end();
+    const_iterator cend() const;
 
+    /** Determine whether the container is empty */
+    bool empty() const;
+
+    /** Get the number of values stored by the container */
     size_type size() const;
 
-    std::pair<iterator, bool> insert(const value_type& value);
-    const_iterator find(const key_type& key) const;
-    size_type erase(const key_type& key);
+    /** Remove all values from the container */
+    void clear();
 
-private:
-    std::shared_ptr<Map> storage_;
-    InputFunction input_;
-    OutputFunction output_;
+    /** Insert an element */
+    std::pair<iterator, bool> insert(const value_type& value);
+
+    /** Remove an element */
+    size_type erase(
+        decltype(transform_.second(typename container_type::key_type()))& key);
+
+    /** Find an element */
+    const_iterator find(const decltype(
+        transform_.second(typename container_type::key_type()))& key) const;
+
+    const container_type& container() const;
+    container_type& container();
 };
 
-/*******************************IMPLEMENTATION*****************************/
-
-template <typename T>
-T Identity<T>::f(const T& input)
-{
-    return input;
-}
-
-template <typename T>
-Identity<T>::Identity() : first(&f), second(&f)
+template <typename Container, typename Transform>
+ContainerTransformer<Container, Transform>::ContainerTransformer(
+    Container container, Transform transform)
+    : container_(std::move(container)), transform_(std::move(transform))
 {
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-MapAdapter<Map, KeyBijection, ValueBijection>::InputFunction::InputFunction(
-    typename KeyBijection::first_type kf,
-    typename ValueBijection::first_type vf)
-    : first(std::move(kf)), second(std::move(vf))
+template <typename Container, typename Transform>
+typename ContainerTransformer<Container, Transform>::iterator
+ContainerTransformer<Container, Transform>::begin()
 {
+    return iterator(container().begin(), transform_.second);
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-typename Map::value_type
-MapAdapter<Map, KeyBijection, ValueBijection>::InputFunction::operator()(
-    const typename MapAdapter<Map, KeyBijection, ValueBijection>::value_type&
-        input) const
+template <typename Container, typename Transform>
+typename ContainerTransformer<Container, Transform>::iterator
+ContainerTransformer<Container, Transform>::end()
 {
-    return std::make_pair(first(input.first), second(input.second));
+    return iterator(container().end(), transform_.second);
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-MapAdapter<Map, KeyBijection, ValueBijection>::OutputFunction::OutputFunction(
-    typename KeyBijection::second_type kf,
-    typename ValueBijection::second_type vf)
-    : first(std::move(kf)), second(std::move(vf))
+template <typename Container, typename Transform>
+typename ContainerTransformer<Container, Transform>::const_iterator
+ContainerTransformer<Container, Transform>::cbegin() const
 {
+    return const_iterator(container().cbegin(), transform_.second);
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-typename MapAdapter<Map, KeyBijection, ValueBijection>::value_type
-MapAdapter<Map, KeyBijection, ValueBijection>::OutputFunction::
-operator()(const typename Map::value_type& input) const
+template <typename Container, typename Transform>
+typename ContainerTransformer<Container, Transform>::const_iterator
+ContainerTransformer<Container, Transform>::cend() const
 {
-    return std::make_pair(first(input.first), second(input.second));
+    return const_iterator(container().cend(), transform_.second);
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-MapAdapter<Map, KeyBijection, ValueBijection>::MapAdapter(
-    std::shared_ptr<Map> storage,
-    KeyBijection key_function,
-    ValueBijection value_function)
-    : storage_(std::move(storage)),
-      input_(key_function.first, value_function.first),
-      output_(key_function.second, value_function.second)
+template <typename Container, typename Transform>
+bool ContainerTransformer<Container, Transform>::empty() const
 {
+    return container().empty();
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-typename MapAdapter<Map, KeyBijection, ValueBijection>::iterator
-MapAdapter<Map, KeyBijection, ValueBijection>::begin()
+template <typename Container, typename Transform>
+typename ContainerTransformer<Container, Transform>::size_type
+ContainerTransformer<Container, Transform>::size() const
 {
-    return iterator(storage_->begin(), output_);
+    return container().size();
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-typename MapAdapter<Map, KeyBijection, ValueBijection>::iterator
-MapAdapter<Map, KeyBijection, ValueBijection>::end()
+template <typename Container, typename Transform>
+void ContainerTransformer<Container, Transform>::clear()
 {
-    return iterator(storage_->end(), output_);
+    container().clear();
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-typename MapAdapter<Map, KeyBijection, ValueBijection>::size_type
-MapAdapter<Map, KeyBijection, ValueBijection>::size() const
+template <typename Container, typename Transform>
+std::pair<typename ContainerTransformer<Container, Transform>::iterator, bool>
+ContainerTransformer<Container, Transform>::insert(
+    const typename ContainerTransformer<Container, Transform>::value_type&
+        value)
 {
-    return storage_->size();
+    auto result = container().insert(transform_.first(value));
+    return std::make_pair(iterator(result.first), result.second);
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-std::pair<typename MapAdapter<Map, KeyBijection, ValueBijection>::iterator,
-          bool>
-MapAdapter<Map, KeyBijection, ValueBijection>::insert(const value_type& value)
+template <typename Container, typename Transform>
+typename ContainerTransformer<Container, Transform>::size_type
+ContainerTransformer<Container, Transform>::erase(
+    decltype(transform_.second(typename container_type::key_type()))& key)
 {
-    auto result = input_(value);
-    auto insertion = storage_->insert(result);
-    auto it = iterator(insertion.first, output_);
-    return std::make_pair(iterator(it), insertion.second);
+    return container().erase(transform_.first(key));
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-typename MapAdapter<Map, KeyBijection, ValueBijection>::const_iterator
-MapAdapter<Map, KeyBijection, ValueBijection>::find(const key_type& key) const
+template <typename Container, typename Transform>
+typename ContainerTransformer<Container, Transform>::const_iterator
+ContainerTransformer<Container, Transform>::find(const decltype(
+    transform_.second(typename container_type::key_type()))& key) const
 {
-    return iterator(storage_->find(input_.first(key)), output_);
+    return const_iterator(container().find(transform_.first(key)));
 }
 
-template <typename Map, typename KeyBijection, typename ValueBijection>
-typename MapAdapter<Map, KeyBijection, ValueBijection>::size_type
-MapAdapter<Map, KeyBijection, ValueBijection>::erase(const key_type& key)
+template <typename Container, typename Transform>
+const typename ContainerTransformer<Container, Transform>::container_type&
+ContainerTransformer<Container, Transform>::container() const
 {
-    return storage_->erase(input_.first(key));
+    return dereference<const Container>(container_);
 }
 
-} // namespace aux
+template <typename Container, typename Transform>
+typename ContainerTransformer<Container, Transform>::container_type&
+ContainerTransformer<Container, Transform>::container()
+{
+    return dereference<Container>(container_);
+}
+
+} // namespace toolbox

@@ -10,15 +10,21 @@ namespace toolbox
 template <typename T>
 class Value
 {
-public:
-    using element_type =
-        typename std::remove_reference<decltype(dereference<T>(T()))>::type;
-    Value(T data);
-    const element_type& get() const;
-    element_type& get();
-
 private:
     T data_;
+
+public:
+    using element_type =
+        typename std::remove_reference<decltype(dereference<T>(data_))>::type;
+    Value(T data);
+
+    element_type* get();
+    element_type& operator*();
+    element_type* operator->();
+
+    const element_type* get() const;
+    const element_type& operator*() const;
+    const element_type* operator->() const;
 };
 
 template <typename T>
@@ -27,15 +33,39 @@ Value<T>::Value(T data) : data_(std::move(data))
 }
 
 template <typename T>
-const typename Value<T>::element_type& Value<T>::get() const
+typename Value<T>::element_type* Value<T>::get()
 {
-    return dereference<const T>(data_);
+    return &(dereference<T>(data_));
 }
 
 template <typename T>
-typename Value<T>::element_type& Value<T>::get()
+const typename Value<T>::element_type* Value<T>::get() const
 {
-    return dereference<T>(data_);
+    return &(dereference<const T>(data_));
+}
+
+template <typename T>
+typename Value<T>::element_type* Value<T>::operator->()
+{
+    return get();
+}
+
+template <typename T>
+const typename Value<T>::element_type* Value<T>::operator->() const
+{
+    return get();
+}
+
+template <typename T>
+const typename Value<T>::element_type& Value<T>::operator*() const
+{
+    return *get();
+}
+
+template <typename T>
+typename Value<T>::element_type& Value<T>::operator*()
+{
+    return *get();
 }
 
 } // namespace toolbox

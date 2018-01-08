@@ -1,8 +1,8 @@
 #pragma once
 #include <map>
 #include <memory>
-#include <toolbox/Dereference.h>
 #include <toolbox/IteratorTransformer.h>
+#include <toolbox/Value.h>
 #include <type_traits>
 #include <vector>
 
@@ -28,12 +28,11 @@ template <typename Container, typename Transform>
 class ContainerTransformer
 {
 private:
-    Container container_;
+    Value<Container> container_;
     Transform transform_;
 
 public:
-    using container_type = typename std::remove_reference<decltype(
-        dereference<Container>(container_))>::type;
+    using container_type = typename Value<Container>::element_type;
     using value_type =
         decltype(transform_.second(typename container_type::value_type()));
     using size_type = typename container_type::size_type;
@@ -81,9 +80,6 @@ public:
     /** Find an element */
     const_iterator find(const decltype(
         transform_.second(typename container_type::key_type()))& key) const;
-
-    const container_type& container() const;
-    container_type& container();
 };
 
 template <typename Container, typename Transform>
@@ -97,47 +93,47 @@ template <typename Container, typename Transform>
 typename ContainerTransformer<Container, Transform>::iterator
 ContainerTransformer<Container, Transform>::begin()
 {
-    return iterator(container().begin(), transform_.second);
+    return iterator(container_->begin(), transform_.second);
 }
 
 template <typename Container, typename Transform>
 typename ContainerTransformer<Container, Transform>::iterator
 ContainerTransformer<Container, Transform>::end()
 {
-    return iterator(container().end(), transform_.second);
+    return iterator(container_->end(), transform_.second);
 }
 
 template <typename Container, typename Transform>
 typename ContainerTransformer<Container, Transform>::const_iterator
 ContainerTransformer<Container, Transform>::cbegin() const
 {
-    return const_iterator(container().cbegin(), transform_.second);
+    return const_iterator(container_->cbegin(), transform_.second);
 }
 
 template <typename Container, typename Transform>
 typename ContainerTransformer<Container, Transform>::const_iterator
 ContainerTransformer<Container, Transform>::cend() const
 {
-    return const_iterator(container().cend(), transform_.second);
+    return const_iterator(container_->cend(), transform_.second);
 }
 
 template <typename Container, typename Transform>
 bool ContainerTransformer<Container, Transform>::empty() const
 {
-    return container().empty();
+    return container_->empty();
 }
 
 template <typename Container, typename Transform>
 typename ContainerTransformer<Container, Transform>::size_type
 ContainerTransformer<Container, Transform>::size() const
 {
-    return container().size();
+    return container_->size();
 }
 
 template <typename Container, typename Transform>
 void ContainerTransformer<Container, Transform>::clear()
 {
-    container().clear();
+    container_->clear();
 }
 
 template <typename Container, typename Transform>
@@ -146,7 +142,7 @@ ContainerTransformer<Container, Transform>::insert(
     const typename ContainerTransformer<Container, Transform>::value_type&
         value)
 {
-    auto result = container().insert(transform_.first(value));
+    auto result = container_->insert(transform_.first(value));
     return std::make_pair(iterator(result.first), result.second);
 }
 
@@ -155,7 +151,7 @@ typename ContainerTransformer<Container, Transform>::size_type
 ContainerTransformer<Container, Transform>::erase(
     decltype(transform_.second(typename container_type::key_type()))& key)
 {
-    return container().erase(transform_.first(key));
+    return container_->erase(transform_.first(key));
 }
 
 template <typename Container, typename Transform>
@@ -163,21 +159,7 @@ typename ContainerTransformer<Container, Transform>::const_iterator
 ContainerTransformer<Container, Transform>::find(const decltype(
     transform_.second(typename container_type::key_type()))& key) const
 {
-    return const_iterator(container().find(transform_.first(key)));
-}
-
-template <typename Container, typename Transform>
-const typename ContainerTransformer<Container, Transform>::container_type&
-ContainerTransformer<Container, Transform>::container() const
-{
-    return dereference<const Container>(container_);
-}
-
-template <typename Container, typename Transform>
-typename ContainerTransformer<Container, Transform>::container_type&
-ContainerTransformer<Container, Transform>::container()
-{
-    return dereference<Container>(container_);
+    return const_iterator(container_->find(transform_.first(key)));
 }
 
 } // namespace toolbox

@@ -17,6 +17,11 @@ public:
     using element_type =
         typename std::remove_reference<decltype(dereference<T>(data_))>::type;
     Value(T data);
+    Value(Value&&) = default;
+    Value(const Value&) = default;
+    Value& operator=(Value&&) = default;
+    Value& operator=(const Value&) = default;
+    ~Value() = default;
 
     element_type* get();
     element_type& operator*();

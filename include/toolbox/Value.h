@@ -30,6 +30,11 @@ public:
     const element_type* get() const;
     const element_type& operator*() const;
     const element_type* operator->() const;
+
+    bool operator==(const Value& rhs) const;
+    bool operator!=(const Value& rhs) const;
+    bool operator<(const Value& rhs) const;
+    bool operator>(const Value& rhs) const;
 };
 
 template <typename T>
@@ -71,6 +76,30 @@ template <typename T>
 typename Value<T>::element_type& Value<T>::operator*()
 {
     return *get();
+}
+
+template <typename T>
+bool Value<T>::operator==(const Value<T>& rhs) const
+{
+    return data_ == rhs.data_;
+}
+
+template <typename T>
+bool Value<T>::operator!=(const Value<T>& rhs) const
+{
+    return !(*this == rhs);
+}
+
+template <typename T>
+bool Value<T>::operator<(const Value<T>& rhs) const
+{
+    return data_ < rhs.data_;
+}
+
+template <typename T>
+bool Value<T>::operator>(const Value<T>& rhs) const
+{
+    return data_ > rhs.data_;
 }
 
 } // namespace toolbox

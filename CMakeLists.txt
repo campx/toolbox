@@ -19,6 +19,7 @@ target_include_directories(libtoolbox INTERFACE "${toolbox_SOURCE_DIR}/include")
 enable_testing()
 add_executable(TestToolbox 
                test/ContainerTransformer.cpp
+               test/Value.cpp
                test/main.cpp)
 target_link_libraries(TestToolbox gtest libtoolbox)
 set_target_properties(TestToolbox PROPERTIES RUNTIME_OUTPUT_DIRECTORY

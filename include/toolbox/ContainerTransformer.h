@@ -9,14 +9,7 @@
 namespace toolbox
 {
 
-/** Applies an Transform (a bijective function pair) to an AssociativeContainer
- *
- * e.g. Transform takes a std::pair<Link, Node> and calls link.id(hash(node))
- * on
- * input, passes through on output
- *
- * Need to be able to construct Link from ID
- * Set is ~ a map with comparison on first only
+/** Applies a Transform to an AssociativeContainer
  *
  * Transform is a bijective pair of functors
  * Transform::first_type converts from the externally facing data type to the

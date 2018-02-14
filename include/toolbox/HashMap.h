@@ -1,7 +1,7 @@
 #pragma once
 
 #include <map>
-#include <toolbox/HashKeyValue.h>
+#include <toolbox/Result.h>
 #include <utility>
 
 namespace toolbox

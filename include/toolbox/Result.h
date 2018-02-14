@@ -6,136 +6,177 @@
 namespace toolbox
 {
 
-/** Applies a Hash function to data of type T to generate key-value pairs */
-template <typename T, typename Hash = std::hash<T>>
-class HashKeyValue
+/** Holds the result of invoking a Callable on a given input argument
+ * Stores a std::pair<S, T> such that S = f(T) where F is the Callable */
+template <typename T, typename Callable = std::hash<T>>
+class Result
 {
 public:
-    static_assert(std::is_same<typename Hash::argument_type, T>::value,
-                  "Hash::argument_type != T");
+    using argument_type = T;
+    using result_type = decltype(Callable()(T()));
+    using pair_type = typename std::pair<result_type, T>;
 
-    using key_type = typename Hash::result_type;
-    using value_type = T;
-    using pair_type = typename std::pair<key_type, T>;
-
-    /** Construct by generating a key from the data using the given Hash */
-    explicit HashKeyValue(T data, Hash hash = Hash());
+    /** Construct by generating a result from the data using the given
+     * Callable */
+    explicit Result(T value, Callable f = Callable());
 
     /** Component-wise constructor */
-    HashKeyValue(key_type key, T data, Hash hash = Hash());
+    Result(result_type result,
+           T argument,
+           Callable f = Callable(),
+           bool dirty = false);
 
-    /** Construct from a key-value pair */
-    HashKeyValue(const std::pair<typename Hash::result_type, T>& pair);
+    /** Construct from a result-argument pair */
+    Result(const std::pair<result_type, T>& pair);
 
-    /** Set the key */
-    void key(const key_type& value);
+    /** Set the result */
+    Result& result(const result_type& value);
 
-    /** Set the value and re-compute the hash key */
-    void value(const T& data, bool recompute = true);
+    /** Set the argument
+     **@param data  Value to which data will be set
+     **@param dirty If true then do not recompute the callable */
+    Result& argument(const T& value);
 
-    /** Validate that the key is equal to the hash of the value */
+    /** Check whether the dirty flag is set, meaning a recompute is required */
+    bool dirty() const;
+
+    /** Forcibly set the dirty flag value */
+    Result& dirty(bool value);
+
+    /** Validate that the result is equal to the callable of the argument */
     bool validate() const;
 
-    /** Re-compute key value */
-    void rehash();
+    /** Compute the result */
+    result_type compute() const;
 
-    /** Get key associated with data */
-    const key_type& key() const;
+    /** Get result associated with data */
+    const result_type& result() const;
 
-    /** Get the value */
-    const value_type& value() const;
+    /** Lazily recompute and get the result */
+    const result_type& get();
+
+    /** Get the argument */
+    const argument_type& argument() const;
 
     /** Convert to a std::pair */
-    explicit operator std::pair<typename Hash::result_type, T>() const;
+    explicit operator std::pair<typename Callable::result_type, T>() const;
 
-    /** Convert to value */
+    /** Convert to argument */
     explicit operator T() const;
 
-    bool operator==(const HashKeyValue<T, Hash>& rhs) const;
+    bool operator==(const Result<T, Callable>& rhs) const;
 
-    bool operator!=(const HashKeyValue<T, Hash>& rhs) const;
+    bool operator!=(const Result<T, Callable>& rhs) const;
 
 private:
     pair_type pair_;
-    Hash hash_;
+    Callable f_;
+    bool dirty_;
 };
 
-template <typename T, typename Hash>
-HashKeyValue<T, Hash>::HashKeyValue(T data, Hash hash) : hash_(std::move(hash))
+template <typename T, typename Callable>
+Result<T, Callable>::Result(T value, Callable f)
+    : f_(std::move(f)), dirty_(true)
 {
-    value(data);
-    rehash();
+    argument(value);
 }
 
-template <typename T, typename Hash>
-HashKeyValue<T, Hash>::HashKeyValue(typename Hash::result_type key,
-                                    T data,
-                                    Hash hash)
-    : pair_(std::move(key), std::move(data)), hash_(std::move(hash))
+template <typename T, typename Callable>
+Result<T, Callable>::Result(typename Result<T, Callable>::result_type result,
+                            T value,
+                            Callable f,
+                            bool dirty)
+    : pair_(std::move(result), std::move(value)), f_(std::move(f)),
+      dirty_(dirty)
 {
 }
 
-template <typename T, typename Hash>
-void HashKeyValue<T, Hash>::key(const typename Hash::result_type& value)
+template <typename T, typename Callable>
+Result<T, Callable>& Result<T, Callable>::result(
+    const typename Result<T, Callable>::result_type& value)
 {
     pair_.first = value;
+    dirty(false);
+    return *this;
 }
 
-template <typename T, typename Hash>
-void HashKeyValue<T, Hash>::value(const T& data, bool recompute)
+template <typename T, typename Callable>
+const typename Result<T, Callable>::result_type& Result<T, Callable>::get()
 {
-    pair_.second = data;
-    if (recompute)
+    if (dirty())
     {
-        rehash();
+        result(compute());
     }
+    return result();
 }
 
-template <typename T, typename Hash>
-bool HashKeyValue<T, Hash>::validate() const
+template <typename T, typename Callable>
+Result<T, Callable>& Result<T, Callable>::argument(const T& value)
 {
-    return hash_(value()) == key();
+    pair_.second = value;
+    dirty(true);
+    return *this;
 }
 
-template <typename T, typename Hash>
-void HashKeyValue<T, Hash>::rehash()
+template <typename T, typename Callable>
+bool Result<T, Callable>::dirty() const
 {
-    key(hash_(value()));
+    return dirty_;
 }
 
-template <typename T, typename Hash>
-const typename Hash::result_type& HashKeyValue<T, Hash>::key() const
+template <typename T, typename Callable>
+Result<T, Callable>& Result<T, Callable>::dirty(bool value)
+{
+    dirty_ = value;
+    return *this;
+}
+
+template <typename T, typename Callable>
+bool Result<T, Callable>::validate() const
+{
+    return compute() == result();
+}
+
+template <typename T, typename Callable>
+typename Result<T, Callable>::result_type Result<T, Callable>::compute() const
+{
+    return f_(argument());
+}
+
+template <typename T, typename Callable>
+const typename Result<T, Callable>::result_type&
+Result<T, Callable>::result() const
 {
     return pair_.first;
 }
 
-template <typename T, typename Hash>
-const T& HashKeyValue<T, Hash>::value() const
+template <typename T, typename Callable>
+const T& Result<T, Callable>::argument() const
 {
     return pair_.second;
 }
 
-template <typename T, typename Hash>
-HashKeyValue<T, Hash>::
-operator std::pair<typename Hash::result_type, T>() const
+template <typename T, typename Callable>
+Result<T, Callable>::
+operator std::pair<typename Callable::result_type, T>() const
 {
     return pair_;
 }
 
-template <typename T, typename Hash>
-HashKeyValue<T, Hash>::operator T() const
+template <typename T, typename Callable>
+Result<T, Callable>::operator T() const
 {
     return pair_.second;
 }
 
-template <typename T, typename Hash>
-bool HashKeyValue<T, Hash>::operator==(const HashKeyValue<T, Hash>& rhs) const
+template <typename T, typename Callable>
+bool Result<T, Callable>::operator==(const Result<T, Callable>& rhs) const
 {
-    return key() == rhs.key();
+    return result() == rhs.result();
 }
 
-template <typename T, typename Hash>
-bool HashKeyValue<T, Hash>::operator!=(const HashKeyValue<T, Hash>& rhs) const
+template <typename T, typename Callable>
+bool Result<T, Callable>::operator!=(const Result<T, Callable>& rhs) const
 {
     return !(*this == rhs);
 }

@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(libtoolbox 
     include/toolbox/IteratorTransformer.h   src/IteratorTransformer.cpp
     include/toolbox/ContainerTransformer.h  src/ContainerTransformer.cpp
+    include/toolbox/Result.h                src/Result.cpp
     include/toolbox/Value.h                 src/Value.cpp)
 set_target_properties(libtoolbox PROPERTIES OUTPUT_NAME toolbox)
 
@@ -20,6 +21,7 @@ enable_testing()
 add_executable(TestToolbox 
                test/ContainerTransformer.cpp
                test/Value.cpp
+               test/Result.cpp
                test/main.cpp)
 target_link_libraries(TestToolbox gtest libtoolbox)
 set_target_properties(TestToolbox PROPERTIES RUNTIME_OUTPUT_DIRECTORY

@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
-#include <toolbox/HashKeyValue.h>
 #include <string>
+#include <toolbox/Result.h>
 
 struct CharHash
 {
@@ -13,29 +13,30 @@ struct CharHash
     }
 };
 
-TEST(toolbox, HashKeyValue)
+TEST(toolbox, Result)
 {
-    using KeyValue = toolbox::HashKeyValue<std::string, CharHash>;
-    using Pair = KeyValue::pair_type;
-    auto key_value = KeyValue("elephant");
-    EXPECT_EQ(char('Q'), key_value.key());
-    EXPECT_EQ("elephant", key_value.value());
-    EXPECT_EQ(Pair(char('Q'), "elephant"), Pair(key_value));
-    key_value.value("panda");
-    EXPECT_EQ("panda", key_value.value());
-    EXPECT_EQ(char(4), key_value.key());
-    auto key_value2 = key_value;
-    EXPECT_EQ(key_value, key_value2);
-    key_value2.key(42);
-    EXPECT_EQ(42u, key_value2.key());
-    EXPECT_EQ("panda", key_value2.value());
-    EXPECT_NE(key_value, key_value2);
-    auto key_value3 = KeyValue(42u, "panda");
-    EXPECT_EQ(key_value2, key_value3);
-    EXPECT_EQ(key_value2.value(), key_value3.value());
-    EXPECT_FALSE(key_value3.validate());
-    key_value3.rehash();
-    EXPECT_TRUE(key_value3.validate());
-    auto value = std::string(key_value3);
+    using Result = toolbox::Result<std::string, CharHash>;
+    using Pair = Result::pair_type;
+    auto result = Result("elephant");
+    result.dirty(false);
+    EXPECT_EQ(0, result.get());
+    EXPECT_EQ("elephant", result.argument());
+    EXPECT_EQ(Pair(0, "elephant"), Pair(result));
+    result.argument("panda");
+    EXPECT_EQ("panda", result.argument());
+    EXPECT_EQ(char('p'), result.get());
+    auto result2 = result;
+    EXPECT_EQ(result, result2);
+    result2.result(42);
+    EXPECT_EQ(42u, result2.get());
+    EXPECT_EQ("panda", result2.argument());
+    EXPECT_NE(result, result2);
+    auto result3 = Result(42u, "panda");
+    EXPECT_EQ(result2, result3);
+    EXPECT_EQ(result2.argument(), result3.argument());
+    EXPECT_FALSE(result3.validate());
+    EXPECT_EQ(42u, result3.result());
+    EXPECT_FALSE(result3.validate());
+    auto value = std::string(result3);
     EXPECT_EQ("panda", value);
 }

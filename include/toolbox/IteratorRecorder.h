@@ -4,6 +4,8 @@
 
 namespace toolbox
 {
+/** Fills a std::vector<Iterator>, which can then be
+'re-wound' with operator-- even in forward-only iterators like graph search */
 template <typename Iterator>
 class IteratorRecorder : public std::iterator<std::input_iterator_tag,
                                               typename Iterator::value_type>

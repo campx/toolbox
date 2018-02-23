@@ -1,10 +1,8 @@
 #pragma once
-#include <map>
 #include <memory>
 #include <toolbox/IteratorTransformer.h>
 #include <toolbox/Value.h>
 #include <type_traits>
-#include <vector>
 
 namespace toolbox
 {

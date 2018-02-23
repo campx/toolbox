@@ -8,6 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library(libtoolbox 
     include/toolbox/IteratorTransformer.h   src/IteratorTransformer.cpp
+    include/toolbox/IteratorRecorder.h      src/IteratorRecorder.cpp
+    include/toolbox/Iterator.h              src/Iterator.cpp
     include/toolbox/ContainerTransformer.h  src/ContainerTransformer.cpp
     include/toolbox/SequencePredicate.h     src/SequencePredicate.cpp
     include/toolbox/Result.h                src/Result.cpp
@@ -23,6 +25,8 @@ add_executable(TestToolbox
                test/ContainerTransformer.cpp
                test/Value.cpp
                test/SequencePredicate.cpp
+               test/IteratorRecorder.cpp
+               test/Iterator.cpp
                test/Result.cpp
                test/main.cpp)
 target_link_libraries(TestToolbox gtest libtoolbox)

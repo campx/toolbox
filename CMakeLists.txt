@@ -2,8 +2,19 @@ cmake_minimum_required(VERSION 2.8)
 
 project(toolbox LANGUAGES CXX)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Werror")
-include_directories(${toolbox_SOURCE_DIR}/include)
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+    message(STATUS "Using MSVC")
+else()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") # using Clang
+        message(STATUS "Using Clang")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU) # using GCC
+        message(STATUS "Using GNU")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
+    endif()
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library(libtoolbox 
@@ -12,13 +23,14 @@ add_library(libtoolbox
     include/toolbox/Iterator.h              src/Iterator.cpp
     include/toolbox/ContainerTransformer.h  src/ContainerTransformer.cpp
     include/toolbox/SequencePredicate.h     src/SequencePredicate.cpp
-    include/toolbox/Result.h                src/Result.cpp
+    include/toolbox/LazyEvaluation.h        src/LazyEvaluation.cpp
     include/toolbox/Value.h                 src/Value.cpp)
+
 set_target_properties(libtoolbox PROPERTIES OUTPUT_NAME toolbox)
 
 add_subdirectory(external/gtest)
 
-target_include_directories(libtoolbox INTERFACE "${toolbox_SOURCE_DIR}/include")
+target_include_directories(libtoolbox PUBLIC "${toolbox_SOURCE_DIR}/include")
 
 enable_testing()
 add_executable(TestToolbox 
@@ -27,7 +39,7 @@ add_executable(TestToolbox
                test/SequencePredicate.cpp
                test/IteratorRecorder.cpp
                test/Iterator.cpp
-               test/Result.cpp
+               test/LazyEvaluation.cpp
                test/main.cpp)
 target_link_libraries(TestToolbox gtest libtoolbox)
 set_target_properties(TestToolbox PROPERTIES RUNTIME_OUTPUT_DIRECTORY

@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include <string>
-#include <toolbox/Result.h>
+#include <toolbox/LazyEvaluation.h>
 
 struct CharHash
 {
@@ -13,15 +13,15 @@ struct CharHash
     }
 };
 
-TEST(toolbox, Result)
+TEST(toolbox, LazyEvaluation)
 {
-    using Result = toolbox::Result<std::string, CharHash>;
-    using Pair = Result::pair_type;
-    auto result = Result("elephant");
+    using LazyEvaluation = toolbox::LazyEvaluation<std::string, CharHash>;
+    auto result = LazyEvaluation("elephant");
     result.dirty(false);
     EXPECT_EQ(0, result.get());
     EXPECT_EQ("elephant", result.argument());
-    EXPECT_EQ(Pair(0, "elephant"), Pair(result));
+    EXPECT_EQ(0, result.result());
+    EXPECT_EQ("elephant", result.argument());
     result.argument("panda");
     EXPECT_EQ("panda", result.argument());
     EXPECT_EQ(char('p'), result.get());
@@ -31,12 +31,12 @@ TEST(toolbox, Result)
     EXPECT_EQ(42u, result2.get());
     EXPECT_EQ("panda", result2.argument());
     EXPECT_NE(result, result2);
-    auto result3 = Result(42u, "panda");
+    auto result3 = LazyEvaluation("panda");
+    result3.result(result2.result());
     EXPECT_EQ(result2, result3);
     EXPECT_EQ(result2.argument(), result3.argument());
     EXPECT_FALSE(result3.validate());
     EXPECT_EQ(42u, result3.result());
     EXPECT_FALSE(result3.validate());
-    auto value = std::string(result3);
-    EXPECT_EQ("panda", value);
+    EXPECT_EQ("panda", result3.argument());
 }

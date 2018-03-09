@@ -1,7 +1,7 @@
 #pragma once
 
 #include <map>
-#include <toolbox/Result.h>
+#include <toolbox/LazyEvaluation.h>
 #include <utility>
 
 namespace toolbox

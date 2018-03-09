@@ -25,7 +25,8 @@ public: /** Type definitions */
     using result_type = bool;
 
 public: /** Constructors */
-    SequencePredicate(Sequence sequence, Predicate predicate = Predicate());
+    explicit SequencePredicate(Sequence sequence = Sequence(),
+                               Predicate predicate = Predicate());
 
 public: /** Operators */
     result_type operator()(const argument_type& input);

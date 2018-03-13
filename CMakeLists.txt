@@ -18,27 +18,33 @@ link_directories(${CMAKE_BINARY_DIR}/lib)
 add_subdirectory(external/gtest)
 
 add_library(libtoolbox 
-    include/toolbox/IteratorTransformer.h   src/IteratorTransformer.cpp
-    include/toolbox/IteratorRecorder.h      src/IteratorRecorder.cpp
-    include/toolbox/Iterator.h              src/Iterator.cpp
-    include/toolbox/ContainerTransformer.h  src/ContainerTransformer.cpp
-    include/toolbox/SequencePredicate.h     src/SequencePredicate.cpp
-    include/toolbox/LazyEvaluation.h        src/LazyEvaluation.cpp
-    include/toolbox/Value.h                 src/Value.cpp)
+    toolbox/IteratorTransformer.h   toolbox/IteratorTransformer.cpp
+    toolbox/IteratorRecorder.h      toolbox/IteratorRecorder.cpp
+    toolbox/Iterator.h              toolbox/Iterator.cpp
+    toolbox/ContainerTransformer.h  toolbox/ContainerTransformer.cpp
+    toolbox/SequencePredicate.h     toolbox/SequencePredicate.cpp
+    toolbox/LazyEvaluation.h        toolbox/LazyEvaluation.cpp
+    toolbox/Value.h                 toolbox/Value.cpp)
 
 set_target_properties(libtoolbox PROPERTIES OUTPUT_NAME toolbox)
 target_compile_features(libtoolbox PUBLIC cxx_return_type_deduction)
-target_include_directories(libtoolbox PUBLIC "${toolbox_SOURCE_DIR}/include")
+target_include_directories(libtoolbox PUBLIC "${toolbox_SOURCE_DIR}")
+
+install(TARGETS libtoolbox 
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin)
+install(DIRECTORY toolbox DESTINATION include/toolbox FILES_MATCHING PATTERN "*.h")
 
 enable_testing()
 add_executable(TestToolbox 
-               test/ContainerTransformer.cpp
-               test/Value.cpp
-               test/SequencePredicate.cpp
-               test/IteratorRecorder.cpp
-               test/Iterator.cpp
-               test/LazyEvaluation.cpp
-               test/main.cpp)
+               toolbox/test/ContainerTransformer.cpp
+               toolbox/test/Value.cpp
+               toolbox/test/SequencePredicate.cpp
+               toolbox/test/IteratorRecorder.cpp
+               toolbox/test/Iterator.cpp
+               toolbox/test/LazyEvaluation.cpp
+               toolbox/test/main.cpp)
 
 set_target_properties(TestToolbox PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                       ${CMAKE_CURRENT_BINARY_DIR}/test)

@@ -1,11 +1,7 @@
 #include "gtest/gtest.h"
 #include <string>
 #include <toolbox/ContainerTransformer.h>
-
-namespace
-{
-
-} // namespace
+#include <functional>
 
 TEST(Toolbox, ContainerTransformer)
 {

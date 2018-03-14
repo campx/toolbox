@@ -34,7 +34,7 @@ install(TARGETS libtoolbox
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin)
-install(DIRECTORY toolbox DESTINATION include/toolbox FILES_MATCHING 
+install(DIRECTORY toolbox DESTINATION include FILES_MATCHING 
         PATTERN "*.h")
 
 enable_testing()

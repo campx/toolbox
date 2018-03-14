@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 project(toolbox LANGUAGES CXX)
 
+if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra")
+endif()
+
+SET(GTEST_LIBRARIES gtest)
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
-        SET(GTEST_LIB gtestd)
+        SET(GTEST_LIBRARIES gtestd)
     endif()
-else()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra")
 endif()
 
 include_directories(${CMAKE_BINARY_DIR}/include)
@@ -14,7 +17,7 @@ link_directories(${CMAKE_BINARY_DIR}/lib)
 
 add_subdirectory(external/gtest)
 
-add_library(toolbox 
+add_library(libtoolbox 
     toolbox/IteratorTransformer.h   toolbox/IteratorTransformer.cpp
     toolbox/IteratorRecorder.h      toolbox/IteratorRecorder.cpp
     toolbox/Iterator.h              toolbox/Iterator.cpp
@@ -23,11 +26,11 @@ add_library(toolbox
     toolbox/LazyEvaluation.h        toolbox/LazyEvaluation.cpp
     toolbox/Value.h                 toolbox/Value.cpp)
 
-set_target_properties(toolbox PROPERTIES OUTPUT_NAME toolbox)
-target_compile_features(toolbox PUBLIC cxx_return_type_deduction)
-target_include_directories(toolbox PUBLIC "${toolbox_SOURCE_DIR}")
+set_target_properties(libtoolbox PROPERTIES OUTPUT_NAME toolbox)
+target_compile_features(libtoolbox PUBLIC cxx_return_type_deduction)
+target_include_directories(libtoolbox PUBLIC "${toolbox_SOURCE_DIR}")
 
-install(TARGETS toolbox 
+install(TARGETS libtoolbox 
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin)
@@ -47,9 +50,9 @@ add_executable(TestToolbox
 set_target_properties(TestToolbox PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                       ${CMAKE_CURRENT_BINARY_DIR}/test)
 
-target_link_libraries(TestToolbox ${GTEST_LIB} toolbox)
-
 add_dependencies(TestToolbox googletest)
+target_link_libraries(TestToolbox ${GTEST_LIBRARIES} libtoolbox)
+
 add_test(NAME TestToolbox
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/test
          COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test/TestToolbox)

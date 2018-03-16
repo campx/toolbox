@@ -8,6 +8,7 @@ TEST(Toolbox, IteratorRecorder)
     using Recorder = toolbox::IteratorRecorder<Input::const_iterator>;
     auto input = Input{1, 2, 3, 4, 5, 6, 7, 8, 9};
     auto recorder = Recorder{input.cbegin()};
+    EXPECT_EQ(input.cbegin(), recorder.get());
     EXPECT_EQ(1, *recorder);
     EXPECT_EQ(1, *recorder);
     EXPECT_EQ(2, *(++recorder));

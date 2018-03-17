@@ -33,11 +33,11 @@ public:
     using const_reference = const value_type&;
     using pointer = typename container_type::pointer;
     using const_pointer = typename container_type::const_pointer;
-    using iterator = IteratorTransformer<typename container_type::iterator,
-                                         typename Transform::second_type>;
+    using iterator = IteratorTransformer<typename Transform::second_type,
+                                         typename container_type::iterator>;
     using const_iterator =
-        IteratorTransformer<typename container_type::const_iterator,
-                            typename Transform::second_type>;
+        IteratorTransformer<typename Transform::second_type,
+                            typename container_type::const_iterator>;
 
     explicit ContainerTransformer(Container container = Container(),
                                   Transform transform = Transform());

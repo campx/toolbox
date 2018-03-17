@@ -4,7 +4,7 @@
 namespace toolbox
 {
 
-template <typename Iterator, typename Transform>
+template <typename Transform, typename Iterator>
 class IteratorTransformer
     : public std::iterator<std::input_iterator_tag,
                            decltype(
@@ -45,37 +45,37 @@ private:
     void increment();
 };
 
-template <typename Iterator, typename Transform>
-IteratorTransformer<Iterator, Transform>::IteratorTransformer(
+template <typename Transform, typename Iterator>
+IteratorTransformer<Transform, Iterator>::IteratorTransformer(
     Iterator it, Transform transform)
     : it_(std::move(it)), transform_(transform), dirty_flag_(true)
 {
 }
 
-template <typename Iterator, typename Transform>
-Iterator IteratorTransformer<Iterator, Transform>::iterator() const
+template <typename Transform, typename Iterator>
+Iterator IteratorTransformer<Transform, Iterator>::iterator() const
 {
     return it_;
 }
 
-template <typename Iterator, typename Transform>
-void IteratorTransformer<Iterator, Transform>::increment()
+template <typename Transform, typename Iterator>
+void IteratorTransformer<Transform, Iterator>::increment()
 {
     ++it_;
     dirty_flag_ = true;
 }
 
-template <typename Iterator, typename Transform>
-typename IteratorTransformer<Iterator, Transform>::self_type
-    IteratorTransformer<Iterator, Transform>::operator++()
+template <typename Transform, typename Iterator>
+typename IteratorTransformer<Transform, Iterator>::self_type
+    IteratorTransformer<Transform, Iterator>::operator++()
 {
     increment();
     return *this;
 }
 
-template <typename Iterator, typename Transform>
-typename IteratorTransformer<Iterator, Transform>::self_type
-    IteratorTransformer<Iterator, Transform>::operator++(int dummy)
+template <typename Transform, typename Iterator>
+typename IteratorTransformer<Transform, Iterator>::self_type
+    IteratorTransformer<Transform, Iterator>::operator++(int dummy)
 {
     dummy++;
     auto tmp = *this;
@@ -83,8 +83,8 @@ typename IteratorTransformer<Iterator, Transform>::self_type
     return tmp;
 }
 
-template <typename Iterator, typename Transform>
-void IteratorTransformer<Iterator, Transform>::evaluate()
+template <typename Transform, typename Iterator>
+void IteratorTransformer<Transform, Iterator>::evaluate()
 {
     if (dirty_flag_)
     {
@@ -93,32 +93,32 @@ void IteratorTransformer<Iterator, Transform>::evaluate()
     }
 }
 
-template <typename Iterator, typename Transform>
-typename IteratorTransformer<Iterator, Transform>::reference_type
-    IteratorTransformer<Iterator, Transform>::operator*()
+template <typename Transform, typename Iterator>
+typename IteratorTransformer<Transform, Iterator>::reference_type
+    IteratorTransformer<Transform, Iterator>::operator*()
 {
     evaluate();
     return value_;
 }
 
-template <typename Iterator, typename Transform>
-typename IteratorTransformer<Iterator, Transform>::pointer_type
-    IteratorTransformer<Iterator, Transform>::operator->()
+template <typename Transform, typename Iterator>
+typename IteratorTransformer<Transform, Iterator>::pointer_type
+    IteratorTransformer<Transform, Iterator>::operator->()
 {
     evaluate();
     return &value_;
 }
 
-template <typename Iterator, typename Transform>
-bool IteratorTransformer<Iterator, Transform>::
-operator==(const IteratorTransformer<Iterator, Transform>& rhs) const
+template <typename Transform, typename Iterator>
+bool IteratorTransformer<Transform, Iterator>::
+operator==(const IteratorTransformer<Transform, Iterator>& rhs) const
 {
     return it_ == rhs.it_;
 }
 
-template <typename Iterator, typename Transform>
-bool IteratorTransformer<Iterator, Transform>::
-operator!=(const IteratorTransformer<Iterator, Transform>& rhs) const
+template <typename Transform, typename Iterator>
+bool IteratorTransformer<Transform, Iterator>::
+operator!=(const IteratorTransformer<Transform, Iterator>& rhs) const
 {
     return it_ != rhs.it_;
 }

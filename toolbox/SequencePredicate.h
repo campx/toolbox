@@ -14,64 +14,69 @@ namespace toolbox
  * input = ("home", "/")
  * result = true
  * */
-template <typename Sequence,
-          typename Predicate = std::equal_to<typename Sequence::value_type>>
+template <typename Iterator,
+          typename Predicate = std::equal_to<decltype(*Iterator())>>
 class SequencePredicate
 {
 public: /** Type definitions */
-    using value_type = typename Sequence::value_type;
-    using const_iterator = typename Sequence::const_iterator;
+    using value_type = decltype(*Iterator());
     using argument_type = std::pair<value_type, value_type>;
     using result_type = bool;
 
 public: /** Constructors */
-    explicit SequencePredicate(Sequence sequence = Sequence(),
+    explicit SequencePredicate(Iterator begin = Iterator(),
+                               Iterator end = Iterator(),
                                Predicate predicate = Predicate());
 
 public: /** Operators */
     result_type operator()(const argument_type& input);
 
-private:                           /** Data */
-    Sequence sequence_;            /**< Sequence of data to compare against */
-    Predicate predicate_;          /**< Predicate to match values */
-    const_iterator current_value_; /**< Current value in sequence */
-    const_iterator next_value_;    /**< Next value in sequence */
+private:                  /** Data */
+    Iterator begin_;      /**< Beginning of sequence */
+    Iterator end_;        /**< End of sequence */
+    Predicate predicate_; /**< Predicate to match values */
+    Iterator current_;    /**< Current value in sequence */
+    Iterator next_;       /**< Next value in sequence */
 };
 
-template <typename Sequence, typename Predicate>
-SequencePredicate<Sequence, Predicate>
-makeSequencePredicate(Sequence sequence, Predicate predicate);
+template <typename Iterator, typename Predicate>
+SequencePredicate<Iterator, Predicate>
+makeSequencePredicate(Iterator begin, Iterator end, Predicate predicate);
 
-template <typename Sequence, typename Predicate>
-SequencePredicate<Sequence, Predicate>::SequencePredicate(Sequence sequence,
+template <typename Iterator, typename Predicate>
+SequencePredicate<Iterator, Predicate>::SequencePredicate(Iterator begin,
+                                                          Iterator end,
                                                           Predicate predicate)
-    : sequence_(std::move(sequence)), predicate_(std::move(predicate)),
-      current_value_(sequence_.begin()),
-      next_value_(sequence_.empty() ? current_value_ : ++sequence_.begin())
+    : begin_(std::move(begin)), end_(std::move(end)),
+      predicate_(std::move(predicate)), current_(begin_), next_(current_)
 {
+    if (begin_ != end_)
+    {
+        ++next_;
+    }
 }
 
-template <typename Sequence, typename Predicate>
-SequencePredicate<Sequence, Predicate>
-makeSequencePredicate(Sequence sequence, Predicate predicate)
+template <typename Iterator, typename Predicate>
+SequencePredicate<Iterator, Predicate>
+makeSequencePredicate(Iterator begin, Iterator end, Predicate predicate)
 {
-    return SequencePredicate<decltype(sequence), decltype(predicate)>(
-        std::forward<Sequence>(sequence), std::forward<Predicate>(predicate));
+    return SequencePredicate<decltype(begin), decltype(predicate)>(
+        std::forward<Iterator>(begin), std::forward<Iterator>(end),
+        std::forward<Predicate>(predicate));
 }
 
-template <typename Sequence, typename Predicate>
-typename SequencePredicate<Sequence, Predicate>::result_type
-SequencePredicate<Sequence, Predicate>::
-operator()(const typename SequencePredicate<Sequence,
+template <typename Iterator, typename Predicate>
+typename SequencePredicate<Iterator, Predicate>::result_type
+SequencePredicate<Iterator, Predicate>::
+operator()(const typename SequencePredicate<Iterator,
                                             Predicate>::argument_type& input)
 {
-    auto result = next_value_ != sequence_.end() &&
-                  predicate_(input.first, *current_value_) &&
-                  predicate_(input.second, *next_value_);
+    auto result = next_ != end_ && predicate_(input.first, *current_) &&
+                  predicate_(input.second, *next_);
     if (result)
     {
-        current_value_++;
-        next_value_++;
+        current_++;
+        next_++;
     }
     return result;
 }

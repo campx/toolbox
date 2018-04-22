@@ -22,6 +22,7 @@ add_library(libtoolbox
     toolbox/IteratorRecorder.h      toolbox/IteratorRecorder.cpp
     toolbox/Iterator.h              toolbox/Iterator.cpp
     toolbox/ContainerTransformer.h  toolbox/ContainerTransformer.cpp
+    toolbox/SequencePredicate.h     toolbox/SequencePredicate.cpp
     toolbox/LazyEvaluation.h        toolbox/LazyEvaluation.cpp
     toolbox/Value.h                 toolbox/Value.cpp)
 
@@ -40,6 +41,7 @@ enable_testing()
 add_executable(TestToolbox 
                toolbox/test/ContainerTransformer.cpp
                toolbox/test/Value.cpp
+               toolbox/test/SequencePredicate.cpp
                toolbox/test/IteratorRecorder.cpp
                toolbox/test/Iterator.cpp
                toolbox/test/LazyEvaluation.cpp

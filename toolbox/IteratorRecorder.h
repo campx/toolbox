@@ -19,6 +19,7 @@ private:                                              /** Data */
 
 public: /** Accessors */
     const Iterator& get() const;
+    Iterator& get();
 
 public: /** Constructors */
     explicit IteratorRecorder(Iterator it);
@@ -47,6 +48,12 @@ IteratorRecorder<Iterator>::IteratorRecorder(Iterator it)
 
 template <typename Iterator>
 const Iterator& IteratorRecorder<Iterator>::get() const
+{
+    return recording_[index_];
+}
+
+template <typename Iterator>
+Iterator& IteratorRecorder<Iterator>::get()
 {
     return recording_[index_];
 }

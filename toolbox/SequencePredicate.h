@@ -5,7 +5,7 @@
 namespace toolbox
 {
 
-/** Applies a predicate to pairs of values to those within a given sequence
+/** Applies a comparison to pairs of values to those within a given sequence
  *
  * Whenever a match occurs, position markers within the sequence advance
  *
@@ -15,7 +15,7 @@ namespace toolbox
  * result = true
  * */
 template <typename Iterator,
-          typename Predicate = std::equal_to<decltype(*Iterator())>>
+          typename Compare = std::equal_to<decltype(*Iterator())>>
 class SequencePredicate
 {
 public: /** Type definitions */
@@ -26,29 +26,29 @@ public: /** Type definitions */
 public: /** Constructors */
     explicit SequencePredicate(Iterator begin = Iterator(),
                                Iterator end = Iterator(),
-                               Predicate predicate = Predicate());
+                               Compare compare = Compare());
 
 public: /** Operators */
     result_type operator()(const argument_type& input);
 
-private:                  /** Data */
-    Iterator begin_;      /**< Beginning of sequence */
-    Iterator end_;        /**< End of sequence */
-    Predicate predicate_; /**< Predicate to match values */
-    Iterator current_;    /**< Current value in sequence */
-    Iterator next_;       /**< Next value in sequence */
+private:               /** Data */
+    Iterator begin_;   /**< Beginning of sequence */
+    Iterator end_;     /**< End of sequence */
+    Compare compare_;  /**< Compare to match values */
+    Iterator current_; /**< Current value in sequence */
+    Iterator next_;    /**< Next value in sequence */
 };
 
-template <typename Iterator, typename Predicate>
-SequencePredicate<Iterator, Predicate>
-makeSequencePredicate(Iterator begin, Iterator end, Predicate predicate);
+template <typename Iterator, typename Compare>
+SequencePredicate<Iterator, Compare>
+makeSequencePredicate(Iterator begin, Iterator end, Compare compare);
 
-template <typename Iterator, typename Predicate>
-SequencePredicate<Iterator, Predicate>::SequencePredicate(Iterator begin,
-                                                          Iterator end,
-                                                          Predicate predicate)
+template <typename Iterator, typename Compare>
+SequencePredicate<Iterator, Compare>::SequencePredicate(Iterator begin,
+                                                        Iterator end,
+                                                        Compare compare)
     : begin_(std::move(begin)), end_(std::move(end)),
-      predicate_(std::move(predicate)), current_(begin_), next_(current_)
+      compare_(std::move(compare)), current_(begin_), next_(current_)
 {
     if (begin_ != end_)
     {
@@ -56,23 +56,22 @@ SequencePredicate<Iterator, Predicate>::SequencePredicate(Iterator begin,
     }
 }
 
-template <typename Iterator, typename Predicate>
-SequencePredicate<Iterator, Predicate>
-makeSequencePredicate(Iterator begin, Iterator end, Predicate predicate)
+template <typename Iterator, typename Compare>
+SequencePredicate<Iterator, Compare>
+makeSequencePredicate(Iterator begin, Iterator end, Compare compare)
 {
-    return SequencePredicate<decltype(begin), decltype(predicate)>(
+    return SequencePredicate<decltype(begin), decltype(compare)>(
         std::forward<Iterator>(begin), std::forward<Iterator>(end),
-        std::forward<Predicate>(predicate));
+        std::forward<Compare>(compare));
 }
 
-template <typename Iterator, typename Predicate>
-typename SequencePredicate<Iterator, Predicate>::result_type
-SequencePredicate<Iterator, Predicate>::
-operator()(const typename SequencePredicate<Iterator,
-                                            Predicate>::argument_type& input)
+template <typename Iterator, typename Compare>
+typename SequencePredicate<Iterator, Compare>::result_type
+SequencePredicate<Iterator, Compare>::operator()(
+    const typename SequencePredicate<Iterator, Compare>::argument_type& input)
 {
-    auto result = next_ != end_ && predicate_(input.first, *current_) &&
-                  predicate_(input.second, *next_);
+    auto result = next_ != end_ && compare_(input.first, *current_) &&
+                  compare_(input.second, *next_);
     if (result)
     {
         current_++;

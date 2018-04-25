@@ -25,12 +25,13 @@ public: /** Constructors */
     explicit IteratorRecorder(Iterator it);
 
 public: /** Operators */
+    using value_type = decltype(Iterator().operator*());
     IteratorRecorder& operator++();
     IteratorRecorder operator++(int dummy);
     IteratorRecorder& operator--();
     IteratorRecorder operator--(int dummy);
-    auto& operator*();
-    auto operator-> ();
+    value_type& operator*();
+    value_type operator->();
     bool operator==(const IteratorRecorder& rhs) const;
     bool operator!=(const IteratorRecorder& rhs) const;
     bool operator==(const Iterator& rhs) const;
@@ -96,13 +97,15 @@ IteratorRecorder<Iterator> IteratorRecorder<Iterator>::operator--(int dummy)
 }
 
 template <typename Iterator>
-auto& IteratorRecorder<Iterator>::operator*()
+typename IteratorRecorder<Iterator>::value_type& IteratorRecorder<Iterator>::
+operator*()
 {
     return get().operator*();
 }
 
 template <typename Iterator>
-auto IteratorRecorder<Iterator>::operator-> ()
+typename IteratorRecorder<Iterator>::value_type IteratorRecorder<Iterator>::
+operator->()
 {
     return get().operator->();
 }

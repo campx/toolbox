@@ -13,7 +13,7 @@ class IteratorTransformer
 public:
     using self_type = IteratorTransformer;
 
-    explicit IteratorTransformer(Iterator it,
+    explicit IteratorTransformer(Iterator it = Iterator{},
                                  Transform transform = Transform{});
     IteratorTransformer(const IteratorTransformer& value) = default;
     ~IteratorTransformer() = default;

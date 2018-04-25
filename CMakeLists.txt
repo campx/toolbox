@@ -43,6 +43,7 @@ add_executable(TestToolbox
                toolbox/test/Value.cpp
                toolbox/test/SequencePredicate.cpp
                toolbox/test/IteratorRecorder.cpp
+			   toolbox/test/IteratorTransformer.cpp
                toolbox/test/Iterator.cpp
                toolbox/test/LazyEvaluation.cpp
                toolbox/test/main.cpp)

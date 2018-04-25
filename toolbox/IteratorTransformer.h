@@ -21,7 +21,7 @@ public:
     IteratorTransformer& operator=(const IteratorTransformer&) = default;
     IteratorTransformer& operator=(IteratorTransformer&&) = default;
 
-    Iterator iterator() const;
+    Iterator get() const;
 
     using value_type = decltype(Transform()(typename Iterator::value_type()));
     using reference_type = value_type&;
@@ -53,7 +53,7 @@ IteratorTransformer<Transform, Iterator>::IteratorTransformer(
 }
 
 template <typename Transform, typename Iterator>
-Iterator IteratorTransformer<Transform, Iterator>::iterator() const
+Iterator IteratorTransformer<Transform, Iterator>::get() const
 {
     return it_;
 }

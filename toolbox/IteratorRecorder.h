@@ -1,5 +1,7 @@
 #pragma once
+#include <algorithm>
 #include <iterator>
+#include <memory>
 #include <vector>
 
 namespace toolbox
@@ -12,20 +14,21 @@ class IteratorRecorder : public std::iterator<std::input_iterator_tag,
 {
 public: /** Type Definitions */
     using reference = typename Iterator::reference;
+    using value_type = typename Iterator::value_type;
 
 private:                                              /** Data */
-    std::vector<Iterator> recording_;                 /** Cache */
+    std::shared_ptr<std::vector<value_type>> values_; /** Cache */
+    Iterator it_;
     typename std::vector<Iterator>::size_type index_; /** Current position */
 
-public: /** Accessors */
-    const Iterator& get() const;
-    Iterator& get();
+private:
+    void evaluate();
+    value_type& get();
 
 public: /** Constructors */
     explicit IteratorRecorder(Iterator it);
 
 public: /** Operators */
-    using value_type = decltype(Iterator().operator*());
     IteratorRecorder& operator++();
     IteratorRecorder operator++(int dummy);
     IteratorRecorder& operator--();
@@ -39,35 +42,45 @@ public: /** Operators */
     explicit operator Iterator() const;
 };
 
+template <typename Iterator>
+bool operator==(const Iterator& lhs, const IteratorRecorder<Iterator>& rhs);
+
+template <typename Iterator>
+bool operator!=(const Iterator& lhs, const IteratorRecorder<Iterator>& rhs);
+
 /********************************IMPLEMENTATION********************************/
 
 template <typename Iterator>
 IteratorRecorder<Iterator>::IteratorRecorder(Iterator it)
-    : recording_{it}, index_(0)
+    : values_(std::make_shared<std::vector<value_type>>()), it_(std::move(it)),
+      index_(0)
 {
 }
 
 template <typename Iterator>
-const Iterator& IteratorRecorder<Iterator>::get() const
+void IteratorRecorder<Iterator>::evaluate()
 {
-    return recording_[index_];
+    if (index_ >= values_->size())
+    {
+        values_->emplace_back(*it_);
+    }
 }
 
 template <typename Iterator>
-Iterator& IteratorRecorder<Iterator>::get()
+typename IteratorRecorder<Iterator>::value_type&
+IteratorRecorder<Iterator>::get()
 {
-    return recording_[index_];
+    evaluate();
+    auto& result((*values_)[index_]);
+    return result;
 }
 
 template <typename Iterator>
 IteratorRecorder<Iterator>& IteratorRecorder<Iterator>::operator++()
 {
+    evaluate();
     ++index_;
-    if (index_ == recording_.size())
-    {
-        auto it = recording_.back();
-        recording_.emplace_back(++it);
-    }
+    ++it_;
     return *this;
 }
 
@@ -100,21 +113,41 @@ template <typename Iterator>
 typename IteratorRecorder<Iterator>::value_type& IteratorRecorder<Iterator>::
 operator*()
 {
-    return get().operator*();
+    return get();
 }
 
 template <typename Iterator>
 typename IteratorRecorder<Iterator>::value_type IteratorRecorder<Iterator>::
 operator->()
 {
-    return get().operator->();
+    return get();
 }
 
 template <typename Iterator>
 bool IteratorRecorder<Iterator>::
 operator==(const IteratorRecorder<Iterator>& rhs) const
 {
-    return get() == rhs.get();
+    /** Scenarios:
+     * Iterators equal but different indexes => false
+     * Iterators different but same index and values => true
+     **/
+    auto result = false;
+
+    if (values_->empty() || rhs.values_->empty())
+    { // compare when initialised with iterator
+        result = it_ == rhs.it_;
+    }
+    else if (values_ == rhs.values_)
+    {
+        result = index_ == rhs.index_;
+    }
+    else if (index_ == rhs.index_)
+    {
+        auto begin = values_->begin();
+        auto end = std::next(begin, index_);
+        result = std::equal(begin, end, rhs.values_->begin());
+    }
+    return result;
 }
 
 template <typename Iterator>
@@ -127,7 +160,7 @@ operator!=(const IteratorRecorder<Iterator>& rhs) const
 template <typename Iterator>
 bool IteratorRecorder<Iterator>::operator==(const Iterator& rhs) const
 {
-    return get() == rhs;
+    return it_ == rhs;
 }
 
 template <typename Iterator>
@@ -137,9 +170,14 @@ bool IteratorRecorder<Iterator>::operator!=(const Iterator& rhs) const
 }
 
 template <typename Iterator>
-IteratorRecorder<Iterator>::operator Iterator() const
+bool operator==(const Iterator& lhs, const IteratorRecorder<Iterator>& rhs)
 {
-    return get();
+    return rhs == lhs;
 }
 
+template <typename Iterator>
+bool operator!=(const Iterator& lhs, const IteratorRecorder<Iterator>& rhs)
+{
+    return rhs != lhs;
+}
 } // namespace

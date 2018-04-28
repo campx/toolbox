@@ -5,5 +5,6 @@
 TEST(Toolbox, Iterator)
 {
     auto input = std::vector<std::string>{"a", "b", "c", "d", "e"};
-    EXPECT_EQ("e", *toolbox::last(input));
+    EXPECT_EQ("e", *toolbox::back(input));
+    EXPECT_EQ(input.end(), toolbox::end(input.cbegin(), input.cend()));
 }

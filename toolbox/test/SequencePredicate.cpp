@@ -24,4 +24,11 @@ TEST(Toolbox, SequencePredicate)
     EXPECT_TRUE(predicate(std::make_pair(three, five)));
     EXPECT_FALSE(predicate(std::make_pair(three, five)));
     EXPECT_FALSE(predicate(std::make_pair(five, eight)));
+
+    using Predicate =
+        toolbox::SequencePredicate<std::vector<Value>::const_iterator>;
+    auto pred = Predicate();
+    EXPECT_TRUE(pred(std::make_pair(one, two)));
+    EXPECT_TRUE(pred(std::make_pair(two, three)));
+    EXPECT_TRUE(pred(std::make_pair(three, five)));
 }

@@ -34,7 +34,7 @@ public: /** Operators */
     IteratorRecorder& operator--();
     IteratorRecorder operator--(int dummy);
     value_type& operator*();
-    value_type operator->();
+    value_type* operator->();
     bool operator==(const IteratorRecorder& rhs) const;
     bool operator!=(const IteratorRecorder& rhs) const;
     bool operator==(const Iterator& rhs) const;
@@ -117,10 +117,10 @@ operator*()
 }
 
 template <typename Iterator>
-typename IteratorRecorder<Iterator>::value_type IteratorRecorder<Iterator>::
+typename IteratorRecorder<Iterator>::value_type* IteratorRecorder<Iterator>::
 operator->()
 {
-    return get();
+    return &get();
 }
 
 template <typename Iterator>

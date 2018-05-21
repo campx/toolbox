@@ -2,3 +2,5 @@ build
 .vs
 *.swn
 *.swm
+.idea
+cmake-build-debug

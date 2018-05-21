@@ -24,7 +24,8 @@ add_library(libtoolbox
     toolbox/ContainerTransformer.h  toolbox/ContainerTransformer.cpp
     toolbox/SequencePredicate.h     toolbox/SequencePredicate.cpp
     toolbox/LazyEvaluation.h        toolbox/LazyEvaluation.cpp
-    toolbox/Value.h                 toolbox/Value.cpp)
+        toolbox/Value.h toolbox/Value.cpp
+        toolbox/Codec.h toolbox/Codec.cpp)
 
 set_target_properties(libtoolbox PROPERTIES OUTPUT_NAME toolbox)
 target_compile_features(libtoolbox PUBLIC cxx_return_type_deduction)
@@ -46,6 +47,7 @@ add_executable(TestToolbox
 			   toolbox/test/IteratorTransformer.cpp
                toolbox/test/Iterator.cpp
                toolbox/test/LazyEvaluation.cpp
+        toolbox/test/Codec.cpp
                toolbox/test/main.cpp)
 
 set_target_properties(TestToolbox PROPERTIES RUNTIME_OUTPUT_DIRECTORY

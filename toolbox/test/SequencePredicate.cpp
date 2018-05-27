@@ -15,7 +15,7 @@ TEST(Toolbox, SequencePredicate)
     auto end = sequence.cend();
     auto predicate = makeSequencePredicate(begin, end, [](const Value& lhs,
                                                           const Value& rhs) {
-        return lhs.first == rhs.first;
+        return lhs.first < rhs.first;
     });
 
     EXPECT_FALSE(predicate(std::make_pair(one, two)));

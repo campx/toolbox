@@ -16,7 +16,7 @@ namespace toolbox
  * result = true
  * */
 template <typename Iterator,
-          typename Compare = std::equal_to<decltype(*Iterator())>>
+          typename Compare = std::less<decltype(*Iterator())>>
 class SequencePredicate
 {
 public:
@@ -82,9 +82,11 @@ typename SequencePredicate<Iterator, Compare>::result_type
 SequencePredicate<Iterator, Compare>::operator()(
     const typename SequencePredicate<Iterator, Compare>::argument_type& input)
 {
-    auto result =
-        empty() || (next_ != end_ && compare_(input.first, *current_) &&
-                    compare_(input.second, *next_));
+    auto result = empty() ||
+                  (next_ != end_ && !compare_(input.first, *current_) &&
+                   !compare_(*current_, input.first) &&
+                   !compare_(input.second, *next_) &&
+                   !compare_(*next_, input.second));
     if (result)
     {
         current_++;

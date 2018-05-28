@@ -82,11 +82,15 @@ typename SequencePredicate<Iterator, Compare>::result_type
 SequencePredicate<Iterator, Compare>::operator()(
     const typename SequencePredicate<Iterator, Compare>::argument_type& input)
 {
-    auto result = empty() ||
-                  (next_ != end_ && !compare_(input.first, *current_) &&
-                   !compare_(*current_, input.first) &&
-                   !compare_(input.second, *next_) &&
-                   !compare_(*next_, input.second));
+    auto result = empty();
+    if (!result && next_ != end_)
+    {
+        auto a = compare_(input.first, *current_);
+        auto b = compare_(*current_, input.first);
+        auto c = compare_(input.second, *next_);
+        auto d = compare_(*next_, input.second);
+        result = !a && !b && !c && !d;
+    }
     if (result)
     {
         current_++;

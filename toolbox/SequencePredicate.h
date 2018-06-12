@@ -93,8 +93,8 @@ SequencePredicate<Iterator, Compare>::operator()(
     }
     if (result)
     {
-        current_++;
-        next_++;
+        current_ = current_ == end_ ? current_ : ++current_;
+        next_ = next_ == end_ ? next_ : ++next_;
     }
     return result;
 }

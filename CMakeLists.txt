@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(toolbox LANGUAGES CXX)
 
-if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra")
-endif()
-
 SET(GTEST_LIBRARIES gtest)
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
@@ -24,12 +20,17 @@ add_library(libtoolbox
     toolbox/ContainerTransformer.h  toolbox/ContainerTransformer.cpp
     toolbox/SequencePredicate.h     toolbox/SequencePredicate.cpp
     toolbox/LazyEvaluation.h        toolbox/LazyEvaluation.cpp
-        toolbox/Value.h toolbox/Value.cpp
-        toolbox/Codec.h toolbox/Codec.cpp)
+    toolbox/Value.h				    toolbox/Value.cpp
+    toolbox/Codec.h					toolbox/Codec.cpp)
 
-set_target_properties(libtoolbox PROPERTIES OUTPUT_NAME toolbox)
+set_target_properties(libtoolbox PROPERTIES 
+					  OUTPUT_NAME toolbox
+					  ARCHIVE_OUTPUT_DIRECTORY lib)
 target_compile_features(libtoolbox PUBLIC cxx_return_type_deduction)
 target_include_directories(libtoolbox PUBLIC "${toolbox_SOURCE_DIR}")
+if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+	target_compile_options(libtoolbox PUBLIC -Wall -Werror -Wextra)
+endif()
 
 install(TARGETS libtoolbox 
         LIBRARY DESTINATION lib
@@ -47,7 +48,7 @@ add_executable(TestToolbox
 			   toolbox/test/IteratorTransformer.cpp
                toolbox/test/Iterator.cpp
                toolbox/test/LazyEvaluation.cpp
-        toolbox/test/Codec.cpp
+			   toolbox/test/Codec.cpp
                toolbox/test/main.cpp)
 
 set_target_properties(TestToolbox PROPERTIES RUNTIME_OUTPUT_DIRECTORY

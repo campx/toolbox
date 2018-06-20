@@ -113,15 +113,17 @@ ContainerTransformer<Container, Transform>::cend() const
 }
 
 template <typename Container, typename Transform>
-const Container& ContainerTransformer<Container, Transform>::container() const
+const typename ContainerTransformer<Container, Transform>::container_type&
+ContainerTransformer<Container, Transform>::container() const
 {
-    return container_;
+    return *container_;
 };
 
 template <typename Container, typename Transform>
-Container& ContainerTransformer<Container, Transform>::container()
+typename ContainerTransformer<Container, Transform>::container_type&
+ContainerTransformer<Container, Transform>::container()
 {
-    return container_;
+    return *container_;
 };
 
 template <typename Container, typename Transform>

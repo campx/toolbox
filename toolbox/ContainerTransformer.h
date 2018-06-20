@@ -52,6 +52,10 @@ public:
     iterator end();
     const_iterator cend() const;
 
+    const container_type& container() const;
+
+    container_type& container();
+
     /** Determine whether the container is empty */
     bool empty() const;
 
@@ -107,6 +111,18 @@ ContainerTransformer<Container, Transform>::cend() const
 {
     return const_iterator(container_->cend(), transform_.second);
 }
+
+template <typename Container, typename Transform>
+const Container& ContainerTransformer<Container, Transform>::container() const
+{
+    return container_;
+};
+
+template <typename Container, typename Transform>
+Container& ContainerTransformer<Container, Transform>::container()
+{
+    return container_;
+};
 
 template <typename Container, typename Transform>
 bool ContainerTransformer<Container, Transform>::empty() const

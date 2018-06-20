@@ -2,10 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 project(toolbox LANGUAGES CXX)
 
 SET(GTEST_LIBRARIES gtest)
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-    if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
-        SET(GTEST_LIBRARIES gtestd)
-    endif()
+if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    SET(GTEST_LIBRARIES gtestd)
 endif()
 
 include_directories(${CMAKE_BINARY_DIR}/include)

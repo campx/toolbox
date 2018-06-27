@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 #include <toolbox/IteratorTransformer.h>
-#include <toolbox/Value.h>
 #include <type_traits>
 
 namespace toolbox
@@ -19,11 +18,11 @@ template <typename Container, typename Transform>
 class ContainerTransformer
 {
 private:
-    Value<Container> container_;
+    Container* container_;
     Transform transform_;
 
 public:
-    using container_type = typename Value<Container>::element_type;
+    using container_type = Container;
     using value_type =
         decltype(transform_.second(typename container_type::value_type()));
     using size_type = typename container_type::size_type;
@@ -39,7 +38,7 @@ public:
         IteratorTransformer<typename Transform::second_type,
                             typename container_type::const_iterator>;
 
-    explicit ContainerTransformer(Container container = Container(),
+    explicit ContainerTransformer(Container& container = Container(),
                                   Transform transform = Transform());
 
     ContainerTransformer(const ContainerTransformer&) = default;
@@ -79,8 +78,8 @@ public:
 
 template <typename Container, typename Transform>
 ContainerTransformer<Container, Transform>::ContainerTransformer(
-    Container container, Transform transform)
-    : container_(std::move(container)), transform_(std::move(transform))
+    Container& container, Transform transform)
+    : container_(&container), transform_(std::move(transform))
 {
 }
 

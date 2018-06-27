@@ -30,16 +30,17 @@ public: /** Constructors */
 
 public: /** Operators */
     IteratorRecorder& operator++();
-    IteratorRecorder operator++(int dummy);
+
+    const IteratorRecorder operator++(int dummy);
     IteratorRecorder& operator--();
-    IteratorRecorder operator--(int dummy);
+
+    const IteratorRecorder operator--(int dummy);
     value_type& operator*();
     value_type* operator->();
     bool operator==(const IteratorRecorder& rhs) const;
     bool operator!=(const IteratorRecorder& rhs) const;
     bool operator==(const Iterator& rhs) const;
     bool operator!=(const Iterator& rhs) const;
-    explicit operator Iterator() const;
 };
 
 template <typename Iterator>
@@ -85,7 +86,8 @@ IteratorRecorder<Iterator>& IteratorRecorder<Iterator>::operator++()
 }
 
 template <typename Iterator>
-IteratorRecorder<Iterator> IteratorRecorder<Iterator>::operator++(int dummy)
+const IteratorRecorder<Iterator>
+IteratorRecorder<Iterator>::operator++(int dummy)
 {
     (void)dummy;
     auto result = *this;
@@ -101,7 +103,8 @@ IteratorRecorder<Iterator>& IteratorRecorder<Iterator>::operator--()
 }
 
 template <typename Iterator>
-IteratorRecorder<Iterator> IteratorRecorder<Iterator>::operator--(int dummy)
+const IteratorRecorder<Iterator>
+IteratorRecorder<Iterator>::operator--(int dummy)
 {
     (void)dummy;
     auto result = *this;

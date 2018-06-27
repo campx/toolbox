@@ -1,7 +1,5 @@
 #include "gtest/gtest.h"
-#include <string>
 #include <toolbox/ContainerTransformer.h>
-#include <functional>
 
 TEST(Toolbox, ContainerTransformer)
 {
@@ -17,20 +15,11 @@ TEST(Toolbox, ContainerTransformer)
         EXPECT_EQ("1", output_function(1));
 
         /** Adapt a set of ints into a set of strings */
+        auto underlying = std::set<int>{};
         auto set = toolbox::ContainerTransformer<std::set<int>, decltype(io)>(
-            std::set<int>{}, io);
+            underlying, io);
         set.insert("1");
         EXPECT_NE(set.end(), set.find("1"));
-    }
-    {
-        /** Check that ContainerTransformer also works when the container is a
-         * smart pointer type */
-        using Set = std::shared_ptr<std::set<int>>;
-        auto pset = std::make_shared<std::set<int>>();
-        auto set = toolbox::ContainerTransformer<Set, decltype(io)>(pset, io);
-        set.insert("1");
-        EXPECT_NE(set.end(), set.find("1"));
-        EXPECT_NE(pset->cend(), pset->find(1));
     }
     {
         struct InputFunction
@@ -59,8 +48,11 @@ TEST(Toolbox, ContainerTransformer)
             }
         };
         using map_t = std::map<int, std::string>;
-        auto map = toolbox::ContainerTransformer<
-            map_t, std::pair<InputFunction, OutputFunction>>();
+        auto underlying = map_t{};
+        auto map = toolbox::ContainerTransformer<map_t,
+                                                 std::pair<InputFunction,
+                                                           OutputFunction>>(
+            underlying);
         map.insert(std::make_pair(0, "1234")); // 0 is overwritten with 1234
         auto it = map.find(1234);
         EXPECT_NE(map.cend(), it);

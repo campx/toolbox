@@ -14,7 +14,7 @@ public:
     using encoder_type = Encoder;
     using decoder_type = Decoder;
 
-    Codec(Encoder encoder = Encoder(), Decoder decoder = Decoder());
+    explicit Codec(Encoder encoder = Encoder(), Decoder decoder = Decoder());
 
     Encoder& encoder();
 

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 #include <toolbox/IteratorTransformer.h>
 #include <type_traits>
@@ -24,7 +25,7 @@ private:
 public:
     using container_type = Container;
     using value_type =
-        decltype(transform_.second(typename container_type::value_type()));
+    decltype(transform_.second(typename container_type::value_type()));
     using size_type = typename container_type::size_type;
     using difference_type = typename container_type::difference_type;
     using allocator_type = typename container_type::allocator_type;
@@ -35,20 +36,26 @@ public:
     using iterator = IteratorTransformer<typename Transform::second_type,
                                          typename container_type::iterator>;
     using const_iterator =
-        IteratorTransformer<typename Transform::second_type,
-                            typename container_type::const_iterator>;
+    IteratorTransformer<typename Transform::second_type,
+                        typename container_type::const_iterator>;
 
     explicit ContainerTransformer(Container& container = Container(),
                                   Transform transform = Transform());
 
     ContainerTransformer(const ContainerTransformer&) = default;
+
     ContainerTransformer(ContainerTransformer&&) = default;
+
     ContainerTransformer& operator=(const ContainerTransformer&) = default;
+
     ContainerTransformer& operator=(ContainerTransformer&&) = default;
 
     iterator begin();
+
     const_iterator cbegin() const;
+
     iterator end();
+
     const_iterator cend() const;
 
     const container_type& container() const;
@@ -68,12 +75,12 @@ public:
     std::pair<iterator, bool> insert(const value_type& value);
 
     /** Remove an element */
-    size_type erase(
-        decltype(transform_.second(typename container_type::key_type()))& key);
+    size_type erase(const decltype(transform_.second(
+        typename container_type::key_type()))& key);
 
     /** Find an element */
-    const_iterator find(const decltype(
-        transform_.second(typename container_type::key_type()))& key) const;
+    const_iterator find(const decltype(transform_.second(
+        typename container_type::key_type()))& key) const;
 };
 
 template <typename Container, typename Transform>
@@ -147,8 +154,8 @@ void ContainerTransformer<Container, Transform>::clear()
 template <typename Container, typename Transform>
 std::pair<typename ContainerTransformer<Container, Transform>::iterator, bool>
 ContainerTransformer<Container, Transform>::insert(
-    const typename ContainerTransformer<Container, Transform>::value_type&
-        value)
+    const typename ContainerTransformer<Container,
+                                        Transform>::value_type& value)
 {
     auto result = container_->insert(transform_.first(value));
     return std::make_pair(iterator(result.first), result.second);
@@ -157,15 +164,16 @@ ContainerTransformer<Container, Transform>::insert(
 template <typename Container, typename Transform>
 typename ContainerTransformer<Container, Transform>::size_type
 ContainerTransformer<Container, Transform>::erase(
-    decltype(transform_.second(typename container_type::key_type()))& key)
+    const decltype(transform_.second(typename container_type::key_type()))& key)
 {
     return container_->erase(transform_.first(key));
 }
 
 template <typename Container, typename Transform>
 typename ContainerTransformer<Container, Transform>::const_iterator
-ContainerTransformer<Container, Transform>::find(const decltype(
-    transform_.second(typename container_type::key_type()))& key) const
+ContainerTransformer<Container, Transform>::find(
+    const decltype(transform_.second(
+        typename container_type::key_type()))& key) const
 {
     return const_iterator(container_->find(transform_.first(key)));
 }

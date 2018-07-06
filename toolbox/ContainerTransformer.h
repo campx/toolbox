@@ -75,7 +75,7 @@ public:
     std::pair<iterator, bool> insert(const value_type& value);
 
     /** Remove an element */
-    iterator erase(const decltype(transform_.second(
+    size_type erase(const decltype(transform_.second(
         typename container_type::key_type()))& key);
 
     /** Find an element */
@@ -162,7 +162,7 @@ ContainerTransformer<Container, Transform>::insert(
 }
 
 template <typename Container, typename Transform>
-typename ContainerTransformer<Container, Transform>::iterator
+typename ContainerTransformer<Container, Transform>::size_type
 ContainerTransformer<Container, Transform>::erase(
     const decltype(transform_.second(typename container_type::key_type()))& key)
 {

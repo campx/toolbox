@@ -9,9 +9,7 @@ endif()
 include_directories(${CMAKE_BINARY_DIR}/include)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
-if(NOT TARGET gtest)
-    add_subdirectory(external/googletest)
-endif()
+add_subdirectory(external)
 
 add_library(libtoolbox 
     toolbox/IteratorTransformer.h   toolbox/IteratorTransformer.cpp

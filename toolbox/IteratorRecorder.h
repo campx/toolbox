@@ -26,6 +26,7 @@ private:
     value_type& get();
 
 public: /** Constructors */
+    IteratorRecorder();
     explicit IteratorRecorder(Iterator it);
 
 public: /** Operators */
@@ -50,6 +51,11 @@ template <typename Iterator>
 bool operator!=(const Iterator& lhs, const IteratorRecorder<Iterator>& rhs);
 
 /********************************IMPLEMENTATION********************************/
+
+template <typename Iterator>
+IteratorRecorder<Iterator>::IteratorRecorder()
+{
+}
 
 template <typename Iterator>
 IteratorRecorder<Iterator>::IteratorRecorder(Iterator it)

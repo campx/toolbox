@@ -142,7 +142,15 @@ operator==(const IteratorRecorder<Iterator>& rhs) const
      **/
     auto result = false;
 
-    if (values_->empty() || rhs.values_->empty())
+    if (!values_ && !rhs.values_)
+    {
+        result = true;
+    }
+    else if ((values_ && !rhs.values_) || (rhs.values_ && ! values_))
+    {
+        result = false;
+    }
+    else if (values_->empty() || rhs.values_->empty())
     { // compare when initialised with iterator
         result = it_ == rhs.it_;
     }

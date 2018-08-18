@@ -6,9 +6,10 @@ namespace toolbox
 {
 
 template <typename Transform, typename Iterator>
-class IteratorTransformer : public std::iterator<std::input_iterator_tag,
-                                                 decltype(Transform()(
-                                                     typename Iterator::value_type()))>
+class IteratorTransformer
+    : public std::iterator<std::input_iterator_tag,
+                           decltype(
+                               Transform()(typename Iterator::value_type()))>
 {
 public:
     using self_type = IteratorTransformer;
@@ -30,7 +31,7 @@ public:
 
     using value_type = decltype(Transform()(typename Iterator::value_type()));
     using reference = value_type&;
-    using const_reference = const reference;
+    using const_reference = typename std::add_const<reference>::type;
     using pointer = value_type*;
     using const_pointer = value_type const*;
 
@@ -62,8 +63,8 @@ private:
 };
 
 template <typename Transform, typename Iterator>
-IteratorTransformer<Transform, Iterator>::IteratorTransformer(Iterator it,
-                                                              Transform transform)
+IteratorTransformer<Transform, Iterator>::IteratorTransformer(
+    Iterator it, Transform transform)
     : it_(std::move(it)), transform_(transform), dirty_flag_(true)
 {
 }
@@ -83,7 +84,7 @@ void IteratorTransformer<Transform, Iterator>::increment()
 
 template <typename Transform, typename Iterator>
 typename IteratorTransformer<Transform, Iterator>::self_type
-IteratorTransformer<Transform, Iterator>::operator++()
+    IteratorTransformer<Transform, Iterator>::operator++()
 {
     increment();
     return *this;
@@ -91,9 +92,9 @@ IteratorTransformer<Transform, Iterator>::operator++()
 
 template <typename Transform, typename Iterator>
 const typename IteratorTransformer<Transform, Iterator>::self_type
-IteratorTransformer<Transform, Iterator>::operator++(int dummy)
+    IteratorTransformer<Transform, Iterator>::operator++(int dummy)
 {
-    (void) dummy;
+    (void)dummy;
     auto tmp = *this;
     increment();
     return tmp;
@@ -111,7 +112,7 @@ void IteratorTransformer<Transform, Iterator>::evaluate()
 
 template <typename Transform, typename Iterator>
 typename IteratorTransformer<Transform, Iterator>::reference
-IteratorTransformer<Transform, Iterator>::operator*()
+    IteratorTransformer<Transform, Iterator>::operator*()
 {
     evaluate();
     return value_;
@@ -119,7 +120,7 @@ IteratorTransformer<Transform, Iterator>::operator*()
 
 template <typename Transform, typename Iterator>
 typename IteratorTransformer<Transform, Iterator>::const_reference
-IteratorTransformer<Transform, Iterator>::operator*() const
+    IteratorTransformer<Transform, Iterator>::operator*() const
 {
     if (dirty_flag_)
     {
@@ -131,7 +132,7 @@ IteratorTransformer<Transform, Iterator>::operator*() const
 
 template <typename Transform, typename Iterator>
 typename IteratorTransformer<Transform, Iterator>::pointer
-IteratorTransformer<Transform, Iterator>::operator->()
+    IteratorTransformer<Transform, Iterator>::operator->()
 {
     evaluate();
     return &value_;
@@ -139,7 +140,7 @@ IteratorTransformer<Transform, Iterator>::operator->()
 
 template <typename Transform, typename Iterator>
 typename IteratorTransformer<Transform, Iterator>::const_pointer
-IteratorTransformer<Transform, Iterator>::operator->() const
+    IteratorTransformer<Transform, Iterator>::operator->() const
 {
     if (dirty_flag_)
     {
@@ -150,15 +151,15 @@ IteratorTransformer<Transform, Iterator>::operator->() const
 }
 
 template <typename Transform, typename Iterator>
-bool IteratorTransformer<Transform, Iterator>::operator==(
-    const IteratorTransformer<Transform, Iterator>& rhs) const
+bool IteratorTransformer<Transform, Iterator>::
+operator==(const IteratorTransformer<Transform, Iterator>& rhs) const
 {
     return it_ == rhs.it_;
 }
 
 template <typename Transform, typename Iterator>
-bool IteratorTransformer<Transform, Iterator>::operator!=(
-    const IteratorTransformer<Transform, Iterator>& rhs) const
+bool IteratorTransformer<Transform, Iterator>::
+operator!=(const IteratorTransformer<Transform, Iterator>& rhs) const
 {
     return it_ != rhs.it_;
 }

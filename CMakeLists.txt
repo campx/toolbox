@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(toolbox LANGUAGES CXX)
 
-SET(GTEST_LIBRARIES gtest)
-if (${CMAKE_BUILD_TYPE} MATCHES Debug)
-    SET(GTEST_LIBRARIES gtestd)
-endif()
-
 include_directories(${CMAKE_BINARY_DIR}/include)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
@@ -52,8 +47,7 @@ add_executable(TestToolbox
 set_target_properties(TestToolbox PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                       ${CMAKE_CURRENT_BINARY_DIR}/test)
 
-add_dependencies(TestToolbox googletest)
-target_link_libraries(TestToolbox ${GTEST_LIBRARIES} libtoolbox)
+target_link_libraries(TestToolbox gtest libtoolbox)
 
 add_test(NAME TestToolbox
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/test
